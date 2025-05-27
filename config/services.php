@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'gradio' => [
+        'url' => env('GRADIO_API_URL', 'http://host.docker.internal:8001'),
+    ],
+
 ];
