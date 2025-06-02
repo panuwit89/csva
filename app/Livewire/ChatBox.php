@@ -8,6 +8,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 class ChatBox extends Component
 {
@@ -21,7 +22,7 @@ class ChatBox extends Component
 
     protected $rules = [
         'message' => 'required|string',
-        'files.*' => 'nullable|file|max:10240', // 10MB max file size
+        'files.*' => 'nullable|file|max:20480', // 20MB max file size
     ];
 
     public function mount(Conversation $conversation)
@@ -53,20 +54,16 @@ class ChatBox extends Component
             // Prepare user message content
             $userMessageContent = $this->message;
             $fileDescriptions = [];
+            $uploadedFiles = [];
 
             // If files are present, prepare them and store metadata
             if (count($this->files) > 0) {
-                // Convert Livewire temporary files to proper UploadedFile instances
-                $uploadedFiles = [];
-
                 foreach ($this->files as $file) {
-                    // Store file temporarily for processing
-                    $tempPath = $file->store('temp');
-                    $fullPath = Storage::path($tempPath);
+                    // Create proper UploadedFile instances from Livewire temporary files
+                    $tempPath = $file->getRealPath();
 
-                    // Create a proper UploadedFile instance
-                    $uploadedFile = new \Illuminate\Http\UploadedFile(
-                        $fullPath,
+                    $uploadedFile = new UploadedFile(
+                        $tempPath,
                         $file->getClientOriginalName(),
                         $file->getMimeType(),
                         null,
@@ -85,17 +82,11 @@ class ChatBox extends Component
                 // Add file information to message content
                 $userMessageContent = [
                     'text' => $this->message,
-                    'files' => $fileDescriptions
+//                    'files' => $fileDescriptions
                 ];
 
                 // Get response from Gradio API with files
                 $response = $gradioService->sendFilesAndPrompt($uploadedFiles, $this->message);
-
-                // Clean up temporary files
-                foreach ($this->files as $file) {
-                    $tempPath = $file->store('temp');
-                    Storage::delete($tempPath);
-                }
             } else {
                 // No files, just send text prompt
                 $response = $gradioService->sendPrompt($this->message);
@@ -104,8 +95,10 @@ class ChatBox extends Component
             // Store user message
             $userMessage = $this->conversation->messages()->create([
                 'type' => 'user',
-                'content' => is_array($userMessageContent) ? json_encode($userMessageContent) : $userMessageContent,
+//                'content' => is_array($userMessageContent) ? json_encode($userMessageContent) : $userMessageContent,
+                'content' => $this->message,
             ]);
+
 
             // Store file attachments if any
             if (count($this->files) > 0) {
@@ -114,7 +107,6 @@ class ChatBox extends Component
                     $path = $file->store('chat_attachments/' . $this->conversation->id, 'public');
 
                     // Create attachment record (assuming you have an attachments relationship)
-                    // You might need to create this relationship and migration
                     $userMessage->attachments()->create([
                         'path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -130,7 +122,7 @@ class ChatBox extends Component
                 'content' => $response,
             ]);
 
-            // Reset the property
+            // Reset the properties
             $this->message = '';
             $this->files = [];
             $this->showFileUpload = false;

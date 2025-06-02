@@ -70,7 +70,7 @@ class GradioService
 
             // Validate files
             $validFiles = array_filter($files, function($file) {
-                return $file instanceof UploadedFile && $file->isValid();
+                return $file instanceof UploadedFile && $file->isValid() && file_exists($file->getRealPath());
             });
 
             if (empty($validFiles)) {
@@ -78,22 +78,29 @@ class GradioService
                 return 'No valid files were provided.';
             }
 
-            // Create multipart request using the same method as your original code
-            $multipartRequest = Http::timeout(120)->asMultipart();
+            // Create multipart request
+            $http = Http::timeout(120)->asMultipart();
 
-            // Add the prompt first (order matters in FastAPI)
-            $multipartRequest->attach('custom_prompt', $prompt);
+            // Add the prompt first
+            $http->attach('custom_prompt', $prompt);
 
-            // Add each file to the request with the correct field name 'files'
-            foreach ($validFiles as $file) {
-                $fileContents = file_get_contents($file->getRealPath());
+            // Add each file to the request
+            foreach ($validFiles as $index => $file) {
+                $filePath = $file->getRealPath();
+
+                if (!file_exists($filePath)) {
+                    Log::error("File does not exist: " . $filePath);
+                    continue;
+                }
+
+                $fileContents = file_get_contents($filePath);
                 if ($fileContents === false) {
                     Log::error("Could not read file: " . $file->getClientOriginalName());
                     continue;
                 }
 
-                // The key name 'files' must match exactly what FastAPI expects
-                $multipartRequest->attach(
+                // Use attach method for files
+                $http->attach(
                     'files',
                     $fileContents,
                     $file->getClientOriginalName(),
@@ -103,16 +110,18 @@ class GradioService
 
             // Log the request details for debugging
             Log::info('Prepared multipart request', [
-                'validFileCount' => count($validFiles),
-                'prompt' => $prompt
+                'validFileCount' => count($validFiles)
             ]);
 
             // Send the request
-            $response = $multipartRequest->post("{$this->baseUrl}/api/process_files_and_prompt");
+            $response = $http->post("{$this->baseUrl}/api/process_files_and_prompt");
 
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('Received file processing response', ['success' => true]);
+                Log::info('Received file processing response', [
+                    'success' => true,
+                    'response' => $data
+                ]);
 
                 if (isset($data['result'])) {
                     return is_array($data['result']) ? ($data['result'][0] ?? 'No response') : $data['result'];
@@ -124,11 +133,18 @@ class GradioService
 
                 return 'Sorry, I could not process your request. Unexpected response format.';
             } else {
-                Log::error('Gradio API error when sending files: ' . $response->status() . ' - ' . $response->body());
+                Log::error('Gradio API error when sending files', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'headers' => $response->headers()
+                ]);
                 return 'There was an error communicating with the AI service when processing files. Status: ' . $response->status();
             }
         } catch (\Exception $e) {
-            Log::error('Error connecting to Gradio API with files: ' . $e->getMessage());
+            Log::error('Error connecting to Gradio API with files: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString()
+            ]);
             return 'Could not connect to the AI service when processing files. Error: ' . $e->getMessage();
         }
     }
