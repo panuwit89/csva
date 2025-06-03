@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Throwable;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +32,9 @@ class GoogleAuthController extends Controller
 
         // Enable offline access to get refresh token
         $this->googleClient->setAccessType('offline');
-        $this->googleClient->setApprovalPrompt('force');
+
+        // Force account selection and password prompt
+        $this->googleClient->setPrompt('select_account consent');
 
         // Set hosted domain restriction
         $this->googleClient->setHostedDomain('ku.th');
