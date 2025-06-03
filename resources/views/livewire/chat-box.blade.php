@@ -38,13 +38,51 @@
             </div>
         @endforeach
 
-{{--        @if($loading)--}}
-{{--            <div class="flex justify-start">--}}
-{{--                <div class="max-w-3/4 p-3 rounded-lg bg-gray-200 text-gray-800">--}}
-{{--                    <span class="inline-block animate-pulse">Thinking...</span>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        @endif--}}
+        @if($showSuggestedPrompts)
+            <div class="flex justify-center mt-8">
+                <div class="max-w-4xl w-full">
+                    <div class="text-center mb-6">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">สามารถช่วยคุณได้ในเรื่องใดบ้าง?</h3>
+                        <p class="text-sm text-gray-500">เลือกหัวข้อที่ต้องการถามเพื่อดูคำถามที่เกี่ยวข้อง</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        @foreach($this->suggestedPrompts as $category)
+                            <div class="relative group">
+                                <button class="w-full flex items-start gap-3 p-4 text-left bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200 {{ $loading ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                    {{ $loading ? 'disabled' : '' }}>
+                                    <div class="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-lg group-hover:bg-blue-50 transition-colors">
+                                        {{ $category['icon'] }}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-medium text-gray-900 text-sm mb-1">{{ $category['title'] }}</h4>
+                                        <p class="text-xs text-gray-600">{{ count($category['prompts']) }} คำถาม</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                <!-- Dropdown Menu -->
+                                <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                    <div class="py-2">
+                                        @foreach($category['prompts'] as $prompt)
+                                            <button wire:click="sendMessage('{{ addslashes($prompt) }}')"
+                                                    class="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors {{ $loading ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                                {{ $loading ? 'disabled' : '' }}>
+                                                {{ $prompt }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <div class="flex justify-start" wire:loading wire:target="sendMessage">
             <div class="max-w-3/4 p-3 rounded-lg bg-gray-200 text-gray-800">
                 <div class="flex items-center space-x-2">
@@ -56,8 +94,14 @@
     </div>
 
     <div class="border-t p-4">
-        <form wire:submit.prevent="sendMessage" class="space-y-3">
+        <form wire:submit.prevent="sendMessage" class="space-y-3" id="chat-form">
             <div class="flex gap-2">
+                <button type="button"
+                        wire:click="toggleSuggestedPrompts"
+                        class="bg-green-200 text-green-700 px-4 py-2 rounded-lg hover:bg-green-300"
+                    {{ $loading ? 'disabled' : '' }}>
+                    Prompts
+                </button>
                 <input type="text" wire:model.live="message"
                        class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                        placeholder="Type your message..."
