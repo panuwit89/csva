@@ -3,7 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Conversation;
-use App\Services\GradioService;
+use App\Services\FastAPIService;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +19,7 @@ class ChatBox extends Component
     public $files = [];
     public bool $loading = false;
     public bool $showFileUpload = false;
-    public bool $showSuggestedPrompts = false; // เปลี่ยนเป็น false เป็นค่าเริ่มต้น
+    public bool $showSuggestedPrompts = false;
 
     protected $rules = [
         'message' => 'required|string',
@@ -137,13 +137,6 @@ class ChatBox extends Component
         $this->files = array_values($this->files); // Re-index array
     }
 
-//    public function useSuggestedPrompt($prompt)
-//    {
-//        $this->message = $prompt;
-//        $this->showSuggestedPrompts = false; // Hide suggested prompts
-//        $this->sendMessage(); // Auto-submit
-//    }
-
     public function sendMessage($prompt = null)
     {
         if ($prompt) {
@@ -156,7 +149,7 @@ class ChatBox extends Component
         $this->showSuggestedPrompts = false; // ซ่อน suggested prompts เมื่อส่งข้อความ
 
         try {
-            $gradioService = app(GradioService::class);
+            $fastAPIService = app(FastAPIService::class);
 
             // Prepare user message content
             $userMessageContent = $this->message;
@@ -192,11 +185,11 @@ class ChatBox extends Component
 //                    'files' => $fileDescriptions
                 ];
 
-                // Get response from Gradio API with files
-                $response = $gradioService->sendFilesAndPrompt($uploadedFiles, $this->message);
+                // Get response from Fast API with files
+                $response = $fastAPIService->sendFilesAndPrompt($uploadedFiles, $this->message, $this->conversation->id);
             } else {
                 // No files, just send text prompt
-                $response = $gradioService->sendPrompt($this->message);
+                $response = $fastAPIService->sendPrompt($this->message, $this->conversation->id);
             }
 
             // Store user message

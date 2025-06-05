@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conversation;
-use App\Models\Message;
-use App\Services\GradioService;
+use App\Services\FastAPIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ChatController extends Controller
 {
-    protected GradioService $gradioService;
+    protected FastAPIService $fastAPIService;
 
-    public function __construct(GradioService $gradioService)
+    public function __construct(FastAPIService $fastAPIService)
     {
-        $this->gradioService = $gradioService;
+        $this->fastAPIService = $fastAPIService;
     }
 
     public function index()
@@ -48,7 +46,25 @@ class ChatController extends Controller
             'title' => $validated['title'] ?? 'New Conversation',
         ]);
 
+        // Create chat session in FastAPI
+        $this->fastAPIService->createChatSession($conversation->id);
+
         return redirect()->route('chat.show', $conversation);
+    }
+
+    public function destroy(Conversation $conversation)
+    {
+        // Make sure the user owns this conversation
+        if ($conversation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Delete chat session in FastAPI
+        $this->fastAPIService->deleteChatSession($conversation->id);
+
+        $conversation->delete();
+
+        return redirect()->route('chat.index');
     }
 
     public function sendMessage(Request $request, Conversation $conversation)
@@ -68,8 +84,8 @@ class ChatController extends Controller
             'content' => $validated['message'],
         ]);
 
-        // Get response from Gradio API
-        $responseContent = $this->gradioService->sendPrompt($validated['message']);
+        // Get response from Fast API
+        $responseContent = $this->fastAPIService->sendPrompt($validated['message'], $conversation->id);
 
         // Store assistant response
         $response = $conversation->messages()->create([
@@ -102,12 +118,6 @@ class ChatController extends Controller
         ]);
 
         try {
-            // Log for debugging
-            Log::info('Received message with files', [
-                'fileCount' => count($request->file('files')),
-                'message' => $validated['message'],
-            ]);
-
             // Store uploaded files and create file paths array
             $uploadedFiles = [];
             $fileDescriptions = [];
@@ -138,8 +148,8 @@ class ChatController extends Controller
                 'content' => json_encode($userMessageContent),
             ]);
 
-            // Get response from Gradio API
-            $responseContent = $this->gradioService->sendFilesAndPrompt($uploadedFiles, $validated['message']);
+            // Get response from Fast API
+            $responseContent = $this->fastAPIService->sendFilesAndPrompt($uploadedFiles, $validated['message'], $conversation->id);
 
             // Store assistant response
             $response = $conversation->messages()->create([
@@ -156,11 +166,6 @@ class ChatController extends Controller
 
             return back();
         } catch (\Exception $e) {
-            Log::error('Error processing message with files: ' . $e->getMessage(), [
-                'exception' => get_class($e),
-                'trace' => $e->getTraceAsString()
-            ]);
-
             if ($request->expectsJson()) {
                 return response()->json([
                     'error' => 'Failed to process message with files: ' . $e->getMessage()

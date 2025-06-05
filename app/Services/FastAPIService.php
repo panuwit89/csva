@@ -7,30 +7,31 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class GradioService
+class FastAPIService
 {
     protected string $baseUrl;
 
     public function __construct()
     {
-        $this->baseUrl = config('services.gradio.url', 'http://host.docker.internal:8001');
+        $this->baseUrl = config('services.fastapi.url', 'http://host.docker.internal:8001');
     }
 
     /**
-     * Send a text prompt to the Gradio API
+     * Send a text prompt to the Fast API
      */
-    public function sendPrompt(string $prompt): string
+    public function sendPrompt(string $prompt, int $conv_id): string
     {
         try {
-            Log::info('Sending prompt to Gradio API: ' . $prompt);
+            Log::info('Sending prompt to Fast API: ' . $prompt);
 
-            $response = Http::timeout(60)->post("{$this->baseUrl}/api/process_prompt", [
+            $response = Http::timeout(30)->post("{$this->baseUrl}/api/process_prompt", [
                 'prompt' => $prompt,
+                'conv_id' => $conv_id,
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('Received response from Gradio API', ['data' => $data]);
+                Log::info('Received response from Fast API', ['data' => $data]);
 
                 // Handle different response formats
                 if (isset($data['result'])) {
@@ -43,14 +44,14 @@ class GradioService
 
                 return 'Sorry, I could not process your request. Unexpected response format.';
             } else {
-                Log::error('Gradio API error: ' . $response->status() . ' - ' . $response->body());
+                Log::error('Fast API error: ' . $response->status() . ' - ' . $response->body());
                 return 'There was an error communicating with the AI service. Status: ' . $response->status();
             }
         } catch (\Exception $e) {
-            Log::error('Error connecting to Gradio API: ' . $e->getMessage());
+            Log::error('Error connecting to Fast API: ' . $e->getMessage());
 
             if ($e instanceof ConnectionException) {
-                return 'Could not connect to the Gradio API service. Please make sure the Gradio server is running.';
+                return 'Could not connect to the Fast API service. Please make sure the Fast API server is running.';
             }
 
             return 'Could not process your request. Error: ' . $e->getMessage();
@@ -58,14 +59,15 @@ class GradioService
     }
 
     /**
-     * Send files and a prompt to the Gradio API
+     * Send files and a prompt to the Fast API
      */
-    public function sendFilesAndPrompt(array $files, string $prompt): string
+    public function sendFilesAndPrompt(array $files, string $prompt, int $conv_id): string
     {
         try {
-            Log::info('Sending files and prompt to Gradio API', [
+            Log::info('Sending files and prompt to Fast API', [
                 'fileCount' => count($files),
-                'prompt' => $prompt
+                'prompt' => $prompt,
+                'conv_id' => $conv_id,
             ]);
 
             // Validate files
@@ -79,7 +81,7 @@ class GradioService
             }
 
             // Create multipart request
-            $http = Http::timeout(120)->asMultipart();
+            $http = Http::timeout(60)->asMultipart();
 
             // Add the prompt first
             $http->attach('custom_prompt', $prompt);
@@ -108,6 +110,9 @@ class GradioService
                 );
             }
 
+            // Add the conversation id
+            $http->attach('conv_id', $conv_id);
+
             // Log the request details for debugging
             Log::info('Prepared multipart request', [
                 'validFileCount' => count($validFiles)
@@ -133,7 +138,7 @@ class GradioService
 
                 return 'Sorry, I could not process your request. Unexpected response format.';
             } else {
-                Log::error('Gradio API error when sending files', [
+                Log::error('Fast API error when sending files', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                     'headers' => $response->headers()
@@ -141,11 +146,103 @@ class GradioService
                 return 'There was an error communicating with the AI service when processing files. Status: ' . $response->status();
             }
         } catch (\Exception $e) {
-            Log::error('Error connecting to Gradio API with files: ' . $e->getMessage(), [
+            Log::error('Error connecting to Fast API with files: ' . $e->getMessage(), [
                 'exception' => get_class($e),
                 'trace' => $e->getTraceAsString()
             ]);
             return 'Could not connect to the AI service when processing files. Error: ' . $e->getMessage();
+        }
+    }
+
+    /**
+     * Create a new chat session
+     */
+    public function createChatSession(int $conv_id): bool
+    {
+        try {
+            Log::info('Creating chat session: ' . $conv_id);
+
+            $response = Http::timeout(30)->post("{$this->baseUrl}/api/create_chat", [
+                'conv_id' => $conv_id,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Chat session created successfully', ['data' => $data]);
+                return true;
+            } else {
+                Log::error('Failed to create chat session: ' . $response->status() . ' - ' . $response->body());
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error('Error creating chat session: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ensure chat session exists, create if not
+     */
+    private function ensureChatSession(int $conv_id): void
+    {
+        try {
+            // Check if chat session exists by trying to list chats
+            $response = Http::timeout(10)->get("{$this->baseUrl}/api/list_chats");
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['chat_sessions']) && !in_array($conv_id, $data['chat_sessions'])) {
+                    // Chat session doesn't exist, create it
+                    $this->createChatSession($conv_id);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('Could not check/create chat session: ' . $e->getMessage());
+            // Try to create anyway
+            $this->createChatSession($conv_id);
+        }
+    }
+
+    /**
+     * Delete a chat session
+     */
+    public function deleteChatSession(int $conv_id): bool
+    {
+        try {
+            Log::info('Deleting chat session: ' . $conv_id);
+
+            $response = Http::timeout(30)->delete("{$this->baseUrl}/api/delete_chat/{$conv_id}");
+
+            if ($response->successful()) {
+                Log::info('Chat session deleted successfully');
+                return true;
+            } else {
+                Log::error('Failed to delete chat session: ' . $response->status() . ' - ' . $response->body());
+                return false;
+            }
+        } catch (\Exception $e) {
+            Log::error('Error deleting chat session: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get list of active chat sessions
+     */
+    public function listChatSessions(): array
+    {
+        try {
+            $response = Http::timeout(30)->get("{$this->baseUrl}/api/list_chats");
+
+            if ($response->successful()) {
+                $data = $response->json();
+                return $data['chat_sessions'] ?? [];
+            }
+
+            return [];
+        } catch (\Exception $e) {
+            Log::error('Error listing chat sessions: ' . $e->getMessage());
+            return [];
         }
     }
 
