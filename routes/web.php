@@ -24,8 +24,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatController::class, 'store'])->name('chat.store');
     Route::get('/chat/{conversation}', [ChatController::class, 'show'])->name('chat.show');
+    Route::delete('/chat/{conversation}', [ChatController::class, 'destroy'])->name('chat.destroy');
     Route::post('/chat/{conversation}/send', [ChatController::class, 'sendMessage'])->name('chat.send');
-    Route::post('chat/{conversation}/send-file', [ChatController::class, 'sendMessageWithFiles'])->name('chat.send-file');
+    Route::post('/chat/{conversation}/send-file', [ChatController::class, 'sendMessageWithFiles'])->name('chat.send-file');
 });
 
 require __DIR__.'/auth.php';

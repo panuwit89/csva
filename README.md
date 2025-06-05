@@ -53,8 +53,3 @@ sail down
 > http://localhost
 ### Access phpMyAdmin
 > http://localhost:8080
-
-## Run Seeder
-```bash
-sail artisan migrate:fresh --seed
-```
