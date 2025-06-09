@@ -155,12 +155,12 @@ class FastAPIService
     }
 
     /**
-     * Create a new chat session
+     * Create a new conversation session
      */
     public function createChatSession(int $conv_id): bool
     {
         try {
-            Log::info('Creating chat session: ' . $conv_id);
+            Log::info('Creating conversation session: ' . $conv_id);
 
             $response = Http::timeout(30)->post("{$this->baseUrl}/api/create_chat", [
                 'conv_id' => $conv_id,
@@ -171,22 +171,22 @@ class FastAPIService
                 Log::info('Chat session created successfully', ['data' => $data]);
                 return true;
             } else {
-                Log::error('Failed to create chat session: ' . $response->status() . ' - ' . $response->body());
+                Log::error('Failed to create conversation session: ' . $response->status() . ' - ' . $response->body());
                 return false;
             }
         } catch (\Exception $e) {
-            Log::error('Error creating chat session: ' . $e->getMessage());
+            Log::error('Error creating conversation session: ' . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Ensure chat session exists, create if not
+     * Ensure conversation session exists, create if not
      */
     private function ensureChatSession(int $conv_id): void
     {
         try {
-            // Check if chat session exists by trying to list chats
+            // Check if conversation session exists by trying to list chats
             $response = Http::timeout(10)->get("{$this->baseUrl}/api/list_chats");
 
             if ($response->successful()) {
@@ -197,19 +197,19 @@ class FastAPIService
                 }
             }
         } catch (\Exception $e) {
-            Log::warning('Could not check/create chat session: ' . $e->getMessage());
+            Log::warning('Could not check/create conversation session: ' . $e->getMessage());
             // Try to create anyway
             $this->createChatSession($conv_id);
         }
     }
 
     /**
-     * Delete a chat session
+     * Delete a conversation session
      */
     public function deleteChatSession(int $conv_id): bool
     {
         try {
-            Log::info('Deleting chat session: ' . $conv_id);
+            Log::info('Deleting conversation session: ' . $conv_id);
 
             $response = Http::timeout(30)->delete("{$this->baseUrl}/api/delete_chat/{$conv_id}");
 
@@ -217,17 +217,17 @@ class FastAPIService
                 Log::info('Chat session deleted successfully');
                 return true;
             } else {
-                Log::error('Failed to delete chat session: ' . $response->status() . ' - ' . $response->body());
+                Log::error('Failed to delete conversation session: ' . $response->status() . ' - ' . $response->body());
                 return false;
             }
         } catch (\Exception $e) {
-            Log::error('Error deleting chat session: ' . $e->getMessage());
+            Log::error('Error deleting conversation session: ' . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Get list of active chat sessions
+     * Get list of active conversation sessions
      */
     public function listChatSessions(): array
     {
@@ -241,7 +241,7 @@ class FastAPIService
 
             return [];
         } catch (\Exception $e) {
-            Log::error('Error listing chat sessions: ' . $e->getMessage());
+            Log::error('Error listing conversation sessions: ' . $e->getMessage());
             return [];
         }
     }

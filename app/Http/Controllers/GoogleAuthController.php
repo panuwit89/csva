@@ -136,7 +136,7 @@ class GoogleAuthController extends Controller
             // Clear the state from session
             session()->forget('google_oauth_state');
 
-            return redirect('/chat')->with('success', 'Successfully logged in with Google!');
+            return redirect('/conversation')->with('success', 'Successfully logged in with Google!');
 
         } catch (Throwable $e) {
             Log::error('Google OAuth callback error: ' . $e->getMessage());
