@@ -4,9 +4,11 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ $conversation->title }}
             </h2>
-            <a href="{{ route('chat.index') }}" class="text-blue-500 hover:underline">
-                Back to Conversations
-            </a>
+            <x-button>
+                <a href="{{ route('conversation.index') }}">
+                    Back to Conversations
+                </a>
+            </x-button>
         </div>
     </x-slot>
 

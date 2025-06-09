@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Conversations') }}
             </h2>
-            <form action="{{ route('chat.store') }}" method="POST">
+            <form action="{{ route('conversation.store') }}" method="POST">
                 @csrf
                 <x-button>
                     {{ __('New Conversation') }}
@@ -27,7 +27,7 @@
                     @else
                         <div class="space-y-4">
                             @foreach($conversations as $conversation)
-                                <a href="{{ route('chat.show', $conversation) }}"
+                                <a href="{{ route('conversation.show', $conversation) }}"
                                    class="block p-4 border rounded-lg hover:bg-gray-50 transition">
                                     <div class="flex justify-between items-center">
                                         <h3 class="font-medium">{{ $conversation->title }}</h3>
