@@ -3,8 +3,11 @@
         @foreach($messages as $msg)
             <div class="flex {{ $msg->type === 'user' ? 'justify-end' : 'justify-start' }}">
                 <div class="max-w p-4 rounded-lg {{ $msg->type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
-                    <div class="whitespace-normal">
-                        {!! nl2br(e($msg->content)) !!}
+                        <div class="prose prose-sm max-w-none {{ $msg->type === 'user' ? 'prose-invert' : '' }}">
+                            {!! Str::markdownWithTables($msg->content, [
+                                'html_input' => 'strip',
+                                'allow_unsafe_links' => false,
+                            ]) !!}
                     </div>
 
                     @if($msg->hasAttachments())
@@ -155,20 +158,133 @@
             @endif
         </form>
     </div>
+
+    <style>
+        .prose table {
+            width: 100%;
+            margin: 1rem 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .prose th,
+        .prose td {
+            border: none;
+            border-right: 1px solid #d1d5db;
+            border-bottom: 1px solid #d1d5db;
+            padding: 0.5rem 1rem;
+            text-align: left;
+            background-color: #ffffff;
+        }
+
+        .prose th:last-child,
+        .prose td:last-child {
+            border-right: none;
+        }
+
+        .prose tr:last-child td {
+            border-bottom: none;
+        }
+
+        .prose th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+        }
+
+        .prose p {
+            line-height: 1.6;
+        }
+
+        .prose:not(.prose-invert) p {
+            margin-bottom: 0.2rem;
+        }
+
+        .prose ul {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+            list-style-type: disc;
+        }
+
+        .prose ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+            list-style-type: decimal;
+        }
+
+        .prose li {
+            margin: 0.25rem 0;
+        }
+
+        .prose code {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        .prose pre {
+            background-color: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        .prose pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+    </style>
 </div>
 
 <script>
     // Auto-scroll to bottom when new messages arrive
     document.addEventListener('livewire:initialized', () => {
         const container = document.getElementById('chat-messages');
+        const input = document.getElementById('sendMessageComplete');
+
         const scrollToBottom = () => {
             container.scrollTop = container.scrollHeight;
         };
 
         scrollToBottom();
 
+        // Handle form submission to clear input immediately
+        const form = document.getElementById('chat-form');
+        form.addEventListener('submit', function(e) {
+            // Clear input immediately when form is submitted
+            setTimeout(() => {
+                input.value = '';
+                // Also clear the Livewire model
+            @this.set('message', '');
+            }, 50);
+        });
+
+        // Handle suggested prompt clicks
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('[wire\\:click*="sendMessage"]')) {
+                setTimeout(() => {
+                    input.value = '';
+                @this.set('message', '');
+                }, 50);
+            }
+        });
+
+        // Auto-scroll when messages update
         Livewire.hook('message.processed', (message, component) => {
-            scrollToBottom();
+            setTimeout(scrollToBottom, 100);
+        });
+
+        // Clear input after successful message send
+        Livewire.on('messageSent', () => {
+            input.value = '';
+        @this.set('message', '');
+            setTimeout(scrollToBottom, 100);
         });
     });
 </script>
