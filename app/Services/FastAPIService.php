@@ -24,6 +24,7 @@ class FastAPIService
         try {
             Log::info('Sending prompt to Fast API: ' . $prompt);
 
+            // Sending prompt and conversation id to fast api endpoint
             $response = Http::timeout(30)->post("{$this->baseUrl}/api/process_prompt", [
                 'prompt' => $prompt,
                 'conv_id' => $conv_id,
@@ -180,28 +181,28 @@ class FastAPIService
         }
     }
 
-    /**
-     * Ensure conversation session exists, create if not
-     */
-    private function ensureChatSession(int $conv_id): void
-    {
-        try {
-            // Check if conversation session exists by trying to list chats
-            $response = Http::timeout(10)->get("{$this->baseUrl}/api/list_chats");
-
-            if ($response->successful()) {
-                $data = $response->json();
-                if (isset($data['chat_sessions']) && !in_array($conv_id, $data['chat_sessions'])) {
-                    // Chat session doesn't exist, create it
-                    $this->createChatSession($conv_id);
-                }
-            }
-        } catch (\Exception $e) {
-            Log::warning('Could not check/create conversation session: ' . $e->getMessage());
-            // Try to create anyway
-            $this->createChatSession($conv_id);
-        }
-    }
+//    /**
+//     * Ensure conversation session exists, create if not
+//     */
+//    private function ensureChatSession(int $conv_id): void
+//    {
+//        try {
+//            // Check if conversation session exists by trying to list chats
+//            $response = Http::timeout(10)->get("{$this->baseUrl}/api/list_chats");
+//
+//            if ($response->successful()) {
+//                $data = $response->json();
+//                if (isset($data['chat_sessions']) && !in_array($conv_id, $data['chat_sessions'])) {
+//                    // Chat session doesn't exist, create it
+//                    $this->createChatSession($conv_id);
+//                }
+//            }
+//        } catch (\Exception $e) {
+//            Log::warning('Could not check/create conversation session: ' . $e->getMessage());
+//            // Try to create anyway
+//            $this->createChatSession($conv_id);
+//        }
+//    }
 
     /**
      * Delete a conversation session
@@ -226,24 +227,84 @@ class FastAPIService
         }
     }
 
+//    /**
+//     * Get list of active conversation sessions
+//     */
+//    public function listChatSessions(): array
+//    {
+//        try {
+//            $response = Http::timeout(30)->get("{$this->baseUrl}/api/list_chats");
+//
+//            if ($response->successful()) {
+//                $data = $response->json();
+//                return $data['chat_sessions'] ?? [];
+//            }
+//
+//            return [];
+//        } catch (\Exception $e) {
+//            Log::error('Error listing conversation sessions: ' . $e->getMessage());
+//            return [];
+//        }
+//    }
+
     /**
-     * Get list of active conversation sessions
+     * Refresh AI knowledge base
      */
-    public function listChatSessions(): array
+    public function refreshKnowledge(): array
     {
         try {
-            $response = Http::timeout(30)->get("{$this->baseUrl}/api/list_chats");
+            Log::info('Refreshing AI knowledge base');
+
+            // Check refresh status
+            $statusResponse = Http::timeout(10)->get("{$this->baseUrl}/api/refresh_status");
+
+            if ($statusResponse->successful()) {
+                $status = $statusResponse->json();
+                if ($status['is_running']) {
+                    return [
+                        'success' => false,
+                        'message' => 'Knowledge refresh is already in progress',
+                        'data' => $status
+                    ];
+                }
+            }
+
+            // Start refreshing
+            $response = Http::timeout(30)->post("{$this->baseUrl}/api/refresh_knowledge", [
+                'force' => true
+            ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                return $data['chat_sessions'] ?? [];
-            }
+                Log::info('AI knowledge base refreshed successfully', ['data' => $data]);
 
-            return [];
+                $filesProcessed = $data['files_processed'] ?? 0;
+                $message = "AI knowledge base refreshed successfully!";
+
+                return [
+                    'success' => true,
+                    'message' => $message,
+                    'data' => $data
+                ];
+            } else {
+                $errorMessage = 'Failed to refresh AI knowledge base. Status: ' . $response->status();
+                Log::error($errorMessage . ' - Response: ' . $response->body());
+
+                return [
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'data' => null
+                ];
+            }
         } catch (\Exception $e) {
-            Log::error('Error listing conversation sessions: ' . $e->getMessage());
-            return [];
+            $errorMessage = 'Error refreshing AI knowledge base: ' . $e->getMessage();
+            Log::error($errorMessage);
+
+            return [
+                'success' => false,
+                'message' => $errorMessage,
+                'data' => null
+            ];
         }
     }
-
 }
