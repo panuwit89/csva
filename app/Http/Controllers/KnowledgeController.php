@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Knowledge;
 use App\Repositories\KnowledgeRepository;
+use App\Services\FastAPIService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +18,7 @@ class KnowledgeController extends Controller
 {
     public function __construct(
         private KnowledgeRepository $knowledgeRepository,
+        private FastAPIService $fastAPIService,
     ) {}
 
     /**
@@ -194,42 +197,53 @@ class KnowledgeController extends Controller
         return back()->with('success', "Knowledge document {$status} successfully!");
     }
 
-    public function refreshAiKnowledge()
+    public function refreshKnowledge()
     {
         try {
-            $pythonApiUrl = config('services.fastapi.url', 'http://host.docker.internal:8001');
+            $result = $this->fastAPIService->refreshKnowledge();
 
-            $response = Http::timeout(30)->post("{$pythonApiUrl}/api/refresh_knowledge", [
-                'force' => true
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                return back()->with('success',
-                    "AI knowledge base refreshed successfully! Processed {$data['files_processed']} files.");
+            if ($result['success']) {
+                return back()->with('success', $result['message']);
             } else {
-                throw new \Exception('Failed to refresh AI knowledge base');
+                return back()->with('error', $result['message']);
             }
 
         } catch (\Exception $e) {
-            Log::error('Error refreshing AI knowledge: ' . $e->getMessage());
             return back()->with('error', 'Failed to refresh AI knowledge base: ' . $e->getMessage());
         }
     }
 
-    private function notifyAiSystem(string $action, Knowledge $knowledge)
+    public function getActiveKnowledge(): JsonResponse
     {
         try {
-            $pythonApiUrl = config('services.fastapi.url', 'http://host.docker.internal:8001');
+            $knowledges = $this->knowledgeRepository->getActiveKnowledge();
 
-            // Try to refresh AI knowledge base asynchronously
-            Http::timeout(5)->post("{$pythonApiUrl}/api/refresh_knowledge", [
-                'force' => false
-            ]);
+            return response()->json($knowledges);
 
         } catch (\Exception $e) {
-            // Log error but don't fail the main operation
-            Log::warning("Failed to notify AI system about {$action}: " . $e->getMessage());
+            Log::error('Error fetching active knowledge files: ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Failed to fetch knowledge files',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getKnowledgeStats(): JsonResponse
+    {
+        try {
+            $stats = $this->knowledgeRepository->getStats();
+
+            return response()->json($stats);
+
+        } catch (\Exception $e) {
+            Log::error('Error fetching knowledge statistics: ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Failed to fetch statistics',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

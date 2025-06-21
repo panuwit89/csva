@@ -18,7 +18,7 @@ class KnowledgeRepository
             ->paginate(10);
     }
 
-    public function getActivatedKnowledgeDesc()
+    public function getActiveKnowledge()
     {
         return Knowledge::where('is_active', true)
             ->select([
@@ -37,11 +37,6 @@ class KnowledgeRepository
             ->get();
     }
 
-    public function getActivatedKnowledgeById(int $id)
-    {
-        return Knowledge::where('is_active', true)->findOrFail($id);
-    }
-
     public function getStats()
     {
         $stats = [
@@ -53,10 +48,5 @@ class KnowledgeRepository
         ];
 
         return $stats;
-    }
-
-    public function getActiveCount()
-    {
-        return Knowledge::where('is_active', true)->count();
     }
 }
