@@ -61,4 +61,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Tag::class, 'user_tags');
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'ADMIN';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === 'USER';
+    }
 }
