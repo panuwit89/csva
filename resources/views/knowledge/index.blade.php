@@ -4,11 +4,18 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Knowledge Base') }}
             </h2>
-            <x-button>
-                <a href="{{ route('knowledge.create') }}">
+            <div class="flex justify-content-end space-x-4">
+                <form action="{{ route('knowledge.refresh') }}" method="POST"  onsubmit="return confirm('Are you sure you want to refresh the knowledge? This action takes some time.')">
+                    @csrf
+{{--                    @method('POST')--}}
+                    <x-button type="submit" color="green">
+                        Refresh
+                    </x-button>
+                </form>
+                <x-button :href="route('knowledge.create')">
                     Add Document
-                </a>
-            </x-button>
+                </x-button>
+            </div>
         </div>
     </x-slot>
 
@@ -54,28 +61,30 @@
                                 @foreach($knowledges as $knowledge)
                                     <tr class="hover:bg-gray-50">
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10">
-                                                    <div class="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
-                                                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">
-                                                        {{ $knowledge->title }}
-                                                    </div>
-                                                    <div class="text-sm text-gray-500">
-                                                        {{ $knowledge->original_filename }}
-                                                    </div>
-                                                    @if($knowledge->description)
-                                                        <div class="text-xs text-gray-400 mt-1">
-                                                            {{ Str::limit($knowledge->description, 50) }}
+                                            <a href="{{ route('knowledge.show', $knowledge) }}">
+                                                <div class="flex items-center">
+                                                    <div class="flex-shrink-0 h-10 w-10">
+                                                        <div class="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                                                            <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                            </svg>
                                                         </div>
-                                                    @endif
+                                                    </div>
+                                                    <div class="ml-4">
+                                                        <div class="text-sm font-medium text-gray-900">
+                                                            {{ $knowledge->title }}
+                                                        </div>
+                                                        <div class="text-sm text-gray-500">
+                                                            {{ $knowledge->original_filename }}
+                                                        </div>
+                                                        @if($knowledge->description)
+                                                            <div class="text-xs text-gray-400 mt-1">
+                                                                {{ Str::limit($knowledge->description, 50) }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            </a>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm text-gray-900">{{ $knowledge->file_size_formatted }}</div>

@@ -4,10 +4,8 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ __('Add Knowledge Document') }}
             </h2>
-            <x-button>
-                <a href="{{ route('knowledge.index') }}">
-                    Back to Knowledge
-                </a>
+            <x-button :href="route('knowledge.index')">
+                Back to Knowledge
             </x-button>
         </div>
     </x-slot>

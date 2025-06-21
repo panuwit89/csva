@@ -4,11 +4,18 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 {{ $conversation->title }}
             </h2>
-            <x-button>
-                <a href="{{ route('conversation.index') }}">
+            <div class="flex justify-content-end space-x-4">
+                <form method="POST" action="{{ route('conversation.destroy', $conversation) }}" onsubmit="return confirm('Are you sure you want to delete this conversation? This action cannot be undone.')">
+                    @csrf
+                    @method('DELETE')
+                    <x-button type="submit" color="red">
+                        Delete
+                    </x-button>
+                </form>
+                <x-button :href="route('conversation.index')">
                     Back to Conversations
-                </a>
-            </x-button>
+                </x-button>
+            </div>
         </div>
     </x-slot>
 
