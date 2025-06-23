@@ -181,6 +181,44 @@ class FastAPIService
         }
     }
 
+    public function defineChatName(int $conv_id): string
+    {
+        try {
+            Log::info('Defining chat name for conversation: ' . $conv_id);
+
+            $response = Http::timeout(30)->post("{$this->baseUrl}/api/define_chat_name", [
+                'conv_id' => $conv_id,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Received response from Fast API', ['data' => $data]);
+
+                // Handle different response formats
+                if (isset($data['result'])) {
+                    return is_array($data['result']) ? ($data['result'][0] ?? 'No response') : $data['result'];
+                }
+
+                if (is_array($data) && !empty($data)) {
+                    return $data[0] ?? 'No response';
+                }
+
+                return 'Sorry, I could not process your request. Unexpected response format.';
+            } else {
+                Log::error('Fast API error: ' . $response->status() . ' - ' . $response->body());
+                return 'There was an error communicating with the AI service. Status: ' . $response->status();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error connecting to Fast API: ' . $e->getMessage());
+
+            if ($e instanceof ConnectionException) {
+                return 'Could not connect to the Fast API service. Please make sure the Fast API server is running.';
+            }
+
+            return 'Could not process your request. Error: ' . $e->getMessage();
+        }
+    }
+
 //    /**
 //     * Ensure conversation session exists, create if not
 //     */
