@@ -10,12 +10,9 @@ use Illuminate\Support\Facades\Storage;
 
 class ConversationController extends Controller
 {
-    protected FastAPIService $fastAPIService;
-
-    public function __construct(FastAPIService $fastAPIService)
-    {
-        $this->fastAPIService = $fastAPIService;
-    }
+    public function __construct(
+        private FastAPIService $fastAPIService,
+    ) {}
 
     /**
      * Display a listing of the resource.
