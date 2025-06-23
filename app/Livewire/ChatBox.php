@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Conversation;
+use App\Repositories\ConversationRepository;
 use App\Services\FastAPIService;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -150,6 +151,7 @@ class ChatBox extends Component
 
         try {
             $fastAPIService = app(FastAPIService::class);
+            $conversationRepository = app(ConversationRepository::class);
 
             // Prepare user message content
             $userMessageContent = $this->message;
@@ -221,6 +223,18 @@ class ChatBox extends Component
                 'type' => 'assistant',
                 'content' => $response,
             ]);
+
+            // Call define chat name directly
+            try {
+                // If not defined
+                if ($this->conversation->title == "New Conversation") {
+                    $chatName = $fastAPIService->defineChatName($this->conversation->id);
+                    $conversationRepository->update(['title' => $chatName], $this->conversation->id);
+                    Log::info('Successfully defined chat name: ' . $chatName);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to define chat name: ' . $e->getMessage());
+            }
 
             // Reset the properties
             $this->message = '';
