@@ -11,7 +11,7 @@ class MessageAttachment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['message_id', 'path', 'original_name', 'mime_type'];
+    protected $fillable = ['message_id', 'path', 'original_name', 'mime_type', 'size'];
 
     public function message() : BelongsTo
     {

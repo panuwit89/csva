@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('path');
             $table->string('original_name');
             $table->string('mime_type');
+            $table->bigInteger('size');
             $table->timestamps();
 
             $table->foreign('message_id')
