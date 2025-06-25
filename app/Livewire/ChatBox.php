@@ -8,7 +8,6 @@ use App\Services\FastAPIService;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\UploadedFile;
 
 class ChatBox extends Component
@@ -18,13 +17,22 @@ class ChatBox extends Component
     public Conversation $conversation;
     public string $message = '';
     public $files = [];
+    public $newFiles = [];
     public bool $loading = false;
     public bool $showFileUpload = false;
     public bool $showSuggestedPrompts = false;
 
     protected $rules = [
         'message' => 'required|string',
-        'files.*' => 'nullable|file|max:20480', // 20MB max file size
+        'files.*' => 'nullable|file|max:10240', // 10MB max file size
+        'newFiles.*' => 'nullable|file|max:10240', // 10MB max file size
+    ];
+
+    protected $messages = [
+        'files.max' => 'สามารถเลือกไฟล์ได้ไม่เกิน 3 ไฟล์',
+        'newFiles.max' => 'สามารถเลือกไฟล์ได้ไม่เกิน 3 ไฟล์',
+        'files.*.max' => 'ขนาดไฟล์ต้องไม่เกิน 10MB',
+        'newFiles.*.max' => 'ขนาดไฟล์ต้องไม่เกิน 10MB',
     ];
 
     public function getSuggestedPromptsProperty()
@@ -117,7 +125,7 @@ class ChatBox extends Component
     public function mount(Conversation $conversation)
     {
         $this->conversation = $conversation;
-        // แสดง suggested prompts เมื่อเริ่มต้นถ้าไม่มีข้อความใน conversation
+        // Show suggested prompts when new conversation
         $this->showSuggestedPrompts = $this->conversation->messages()->count() === 0;
     }
 
@@ -131,11 +139,40 @@ class ChatBox extends Component
         $this->showSuggestedPrompts = !$this->showSuggestedPrompts;
     }
 
+    public function updatedNewFiles()
+    {
+        if ($this->newFiles) {
+            foreach ($this->newFiles as $newFile) {
+                // Check less than 3 files
+                if (count($this->files) >= 3) {
+                    $this->addError('files', 'สามารถเลือกไฟล์ได้ไม่เกิน 3 ไฟล์');
+                    break;
+                }
+
+                $this->files[] = $newFile;
+            }
+
+            // Clear newFiles after add into files
+            $this->newFiles = [];
+        }
+    }
+
+    // Remove file at the specified index
     public function removeFile($index)
     {
-        // Remove file at the specified index
         unset($this->files[$index]);
         $this->files = array_values($this->files); // Re-index array
+
+        // Clear error
+        $this->resetErrorBag('files');
+    }
+
+    // Remove all files
+    public function clearAllFiles()
+    {
+        $this->files = [];
+        $this->newFiles = [];
+        $this->resetErrorBag('files');
     }
 
     public function sendMessage($prompt = null)
@@ -147,18 +184,14 @@ class ChatBox extends Component
         $this->validate();
 
         $this->loading = true;
-        $this->showSuggestedPrompts = false; // ซ่อน suggested prompts เมื่อส่งข้อความ
+        $this->showSuggestedPrompts = false; // Hide suggested prompts after sending message
 
         try {
             $fastAPIService = app(FastAPIService::class);
             $conversationRepository = app(ConversationRepository::class);
 
-            // Prepare user message content
-            $userMessageContent = $this->message;
-            $fileDescriptions = [];
             $uploadedFiles = [];
 
-            // If files are present, prepare them and store metadata
             if (count($this->files) > 0) {
                 foreach ($this->files as $file) {
                     // Create proper UploadedFile instances from Livewire temporary files
@@ -173,19 +206,7 @@ class ChatBox extends Component
                     );
 
                     $uploadedFiles[] = $uploadedFile;
-
-                    $fileDescriptions[] = [
-                        'name' => $file->getClientOriginalName(),
-                        'size' => $file->getSize(),
-                        'type' => $file->getMimeType(),
-                    ];
                 }
-
-                // Add file information to message content
-                $userMessageContent = [
-                    'text' => $this->message,
-//                    'files' => $fileDescriptions
-                ];
 
                 // Get response from Fast API with files
                 $response = $fastAPIService->sendFilesAndPrompt($uploadedFiles, $this->message, $this->conversation->id);
@@ -197,10 +218,8 @@ class ChatBox extends Component
             // Store user message
             $userMessage = $this->conversation->messages()->create([
                 'type' => 'user',
-//                'content' => is_array($userMessageContent) ? json_encode($userMessageContent) : $userMessageContent,
                 'content' => $this->message,
             ]);
-
 
             // Store file attachments if any
             if (count($this->files) > 0) {
@@ -208,12 +227,12 @@ class ChatBox extends Component
                     // Save files to permanent storage
                     $path = $file->store('chat_attachments/' . $this->conversation->id, 'public');
 
-                    // Create attachment record (assuming you have an attachments relationship)
+                    // Create attachment record
                     $userMessage->attachments()->create([
                         'path' => $path,
                         'original_name' => $file->getClientOriginalName(),
                         'mime_type' => $file->getMimeType(),
-//                        'size' => $file->getSize(),
+                        'size' => $file->getSize(),
                     ]);
                 }
             }
@@ -239,7 +258,9 @@ class ChatBox extends Component
             // Reset the properties
             $this->message = '';
             $this->files = [];
+            $this->newFiles = [];
             $this->showFileUpload = false;
+            $this->resetErrorBag();
 
             // Clear the input field via JavaScript
             $this->js("document.getElementById('sendMessageComplete').value = ''");

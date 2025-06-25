@@ -3,11 +3,11 @@
         @foreach($messages as $msg)
             <div class="flex {{ $msg->type === 'user' ? 'justify-end' : 'justify-start' }}">
                 <div class="max-w p-4 rounded-lg {{ $msg->type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
-                        <div class="prose prose-sm max-w-none {{ $msg->type === 'user' ? 'prose-invert' : '' }}">
-                            {!! Str::markdownWithTables($msg->content, [
-                                'html_input' => 'strip',
-                                'allow_unsafe_links' => false,
-                            ]) !!}
+                    <div class="prose prose-sm max-w-none {{ $msg->type === 'user' ? 'prose-invert' : '' }}">
+                        {!! Str::markdownWithTables($msg->content, [
+                            'html_input' => 'strip',
+                            'allow_unsafe_links' => false,
+                        ]) !!}
                     </div>
 
                     @if($msg->hasAttachments())
@@ -112,9 +112,14 @@
                     {{ $loading ? 'disabled' : '' }}>
                 <button type="button"
                         wire:click="toggleFileUpload"
-                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300"
+                        class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 relative"
                     {{ $loading ? 'disabled' : '' }}>
                     {{ $showFileUpload ? 'Hide Files' : 'Add Files' }}
+                    @if(count($files) > 0)
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {{ count($files) }}
+                        </span>
+                    @endif
                 </button>
                 <button type="submit"
                         class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -126,33 +131,86 @@
             @if($showFileUpload)
                 <div class="p-3 border rounded-lg border-dashed border-gray-300 bg-gray-50">
                     <div class="mb-2">
-                        <input type="file" wire:model="files" multiple class="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-md file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-blue-50 file:text-blue-700
-                            hover:file:bg-blue-100"
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            เลือกไฟล์ (ได้ไม่เกิน 3 ไฟล์)
+                        </label>
+                        <input type="file"
+                               wire:model="newFiles"
+                               multiple
+                               class="block w-full text-sm text-gray-500
+                                    file:mr-4 file:py-2 file:px-4
+                                    file:rounded-md file:border-0
+                                    file:text-sm file:font-semibold
+                                    file:bg-blue-50 file:text-blue-700
+                                    hover:file:bg-blue-100"
+                            {{ count($files) >= 3 ? 'disabled' : '' }}
                         />
-                        <div wire:loading wire:target="files">Uploading...</div>
-                        @error('files.*') <span class="text-sm text-red-500">{{ $message }}</span> @enderror
+                        <div wire:loading wire:target="newFiles" class="text-sm text-blue-600 mt-1">
+                            <div class="flex items-center">
+                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                                กำลังอัปโหลด...
+                            </div>
+                        </div>
+                        @error('files') <span class="text-sm text-red-500 block mt-1">{{ $message }}</span> @enderror
+                        @error('files.*') <span class="text-sm text-red-500 block mt-1">{{ $message }}</span> @enderror
+                        @error('newFiles.*') <span class="text-sm text-red-500 block mt-1">{{ $message }}</span> @enderror
                     </div>
 
                     @if(count($files) > 0)
-                        <div class="mt-2">
-                            <p class="text-sm text-gray-600 mb-1">Selected files:</p>
-                            <div class="flex flex-wrap gap-2">
+                        <div class="mt-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-sm text-gray-600">ไฟล์ที่เลือก ({{ count($files) }}/3):</p>
+                                <button type="button"
+                                        wire:click="clearAllFiles"
+                                        class="text-xs text-red-600 hover:text-red-800 px-2 py-1 bg-red-50 rounded"
+                                    {{ $loading ? 'disabled' : '' }}>
+                                    ลบทั้งหมด
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 gap-2">
                                 @foreach($files as $index => $file)
-                                    <div class="flex items-center bg-white px-2 py-1 rounded-md border border-gray-300 text-sm">
-                                        <span class="truncate max-w-32">{{ $file->getClientOriginalName() }}</span>
-                                        <button type="button" wire:click="removeFile({{ $index }})" class="ml-1 text-red-500">×</button>
+                                    <div class="flex items-center justify-between bg-white px-3 py-2 rounded-md border border-gray-300">
+                                        <div class="flex items-center space-x-2 flex-1 min-w-0">
+                                            <span class="text-gray-500">
+                                                @php
+                                                    $extension = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+                                                @endphp
+                                                @if(in_array($extension, ['jpg', 'jpeg', 'png', 'gif']))
+                                                    📷
+                                                @elseif($extension === 'pdf')
+                                                    📄
+                                                @elseif(in_array($extension, ['txt', 'doc', 'docx']))
+                                                    📝
+                                                @else
+                                                    📎
+                                                @endif
+                                            </span>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-medium text-gray-900 truncate">
+                                                    {{ $file->getClientOriginalName() }}
+                                                </p>
+                                                <p class="text-xs text-gray-500">
+                                                    {{ number_format($file->getSize() / 1024, 1) }} KB
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button type="button"
+                                                wire:click="removeFile({{ $index }})"
+                                                class="ml-2 text-red-500 hover:text-red-700 p-1"
+                                            {{ $loading ? 'disabled' : '' }}>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
                     @endif
 
-                    <div class="mt-2 text-xs text-gray-500">
-                        Supported formats: PDF, images (PNG, JPG, JPEG), TXT files
+                    <div class="mt-3 text-xs text-gray-500">
+                        <p>รองรับไฟล์: PDF</p>
+                        <p>ขนาดไฟล์ไม่เกิน 10MB ต่อไฟล์</p>
                     </div>
                 </div>
             @endif
