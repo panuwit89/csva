@@ -25,7 +25,7 @@ class FastAPIService
             Log::info('Sending prompt to Fast API: ' . $prompt);
 
             // Sending prompt and conversation id to fast api endpoint
-            $response = Http::timeout(30)->post("{$this->baseUrl}/api/process_prompt", [
+            $response = Http::timeout(60)->post("{$this->baseUrl}/api/process_prompt", [
                 'prompt' => $prompt,
                 'conv_id' => $conv_id,
             ]);
@@ -82,7 +82,7 @@ class FastAPIService
             }
 
             // Create multipart request
-            $http = Http::timeout(60)->asMultipart();
+            $http = Http::timeout(120)->asMultipart();
 
             // Add the prompt first
             $http->attach('custom_prompt', $prompt);
@@ -163,7 +163,7 @@ class FastAPIService
         try {
             Log::info('Creating conversation session: ' . $conv_id);
 
-            $response = Http::timeout(30)->post("{$this->baseUrl}/api/create_chat", [
+            $response = Http::timeout(10)->post("{$this->baseUrl}/api/create_chat", [
                 'conv_id' => $conv_id,
             ]);
 
@@ -181,6 +181,9 @@ class FastAPIService
         }
     }
 
+    /**
+     * Define a chat name
+     */
     public function defineChatName(int $conv_id): string
     {
         try {
@@ -219,29 +222,6 @@ class FastAPIService
         }
     }
 
-//    /**
-//     * Ensure conversation session exists, create if not
-//     */
-//    private function ensureChatSession(int $conv_id): void
-//    {
-//        try {
-//            // Check if conversation session exists by trying to list chats
-//            $response = Http::timeout(10)->get("{$this->baseUrl}/api/list_chats");
-//
-//            if ($response->successful()) {
-//                $data = $response->json();
-//                if (isset($data['chat_sessions']) && !in_array($conv_id, $data['chat_sessions'])) {
-//                    // Chat session doesn't exist, create it
-//                    $this->createChatSession($conv_id);
-//                }
-//            }
-//        } catch (\Exception $e) {
-//            Log::warning('Could not check/create conversation session: ' . $e->getMessage());
-//            // Try to create anyway
-//            $this->createChatSession($conv_id);
-//        }
-//    }
-
     /**
      * Delete a conversation session
      */
@@ -250,7 +230,7 @@ class FastAPIService
         try {
             Log::info('Deleting conversation session: ' . $conv_id);
 
-            $response = Http::timeout(30)->delete("{$this->baseUrl}/api/delete_chat/{$conv_id}");
+            $response = Http::timeout(10)->delete("{$this->baseUrl}/api/delete_chat/{$conv_id}");
 
             if ($response->successful()) {
                 Log::info('Chat session deleted successfully');
@@ -264,26 +244,6 @@ class FastAPIService
             return false;
         }
     }
-
-//    /**
-//     * Get list of active conversation sessions
-//     */
-//    public function listChatSessions(): array
-//    {
-//        try {
-//            $response = Http::timeout(30)->get("{$this->baseUrl}/api/list_chats");
-//
-//            if ($response->successful()) {
-//                $data = $response->json();
-//                return $data['chat_sessions'] ?? [];
-//            }
-//
-//            return [];
-//        } catch (\Exception $e) {
-//            Log::error('Error listing conversation sessions: ' . $e->getMessage());
-//            return [];
-//        }
-//    }
 
     /**
      * Refresh AI knowledge base
@@ -308,7 +268,7 @@ class FastAPIService
             }
 
             // Start refreshing
-            $response = Http::timeout(30)->post("{$this->baseUrl}/api/refresh_knowledge", [
+            $response = Http::timeout(10)->post("{$this->baseUrl}/api/refresh_knowledge", [
                 'force' => true
             ]);
 
