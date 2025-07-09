@@ -190,6 +190,8 @@ class ChatBox extends Component
             $fastAPIService = app(FastAPIService::class);
             $conversationRepository = app(ConversationRepository::class);
 
+            $history_messages = $conversationRepository->getConversationMessage($this->conversation->id);
+
             $uploadedFiles = [];
 
             if (count($this->files) > 0) {
@@ -209,15 +211,15 @@ class ChatBox extends Component
                 }
 
                 // Get response from Fast API with files
-                $response = $fastAPIService->sendFilesAndPrompt($uploadedFiles, $this->message, $this->conversation->id);
+                $response = $fastAPIService->sendFilesAndPrompt($uploadedFiles, $this->message, $this->conversation->id, $history_messages->toArray());
             } else {
                 // No files, just send text prompt
-                $response = $fastAPIService->sendPrompt($this->message, $this->conversation->id);
+                $response = $fastAPIService->sendPrompt($this->message, $this->conversation->id, $history_messages->toArray());
             }
 
             // Store user message
             $userMessage = $this->conversation->messages()->create([
-                'type' => 'user',
+                'role' => 'user',
                 'content' => $this->message,
             ]);
 
@@ -237,9 +239,9 @@ class ChatBox extends Component
                 }
             }
 
-            // Store assistant response
+            // Store model response
             $this->conversation->messages()->create([
-                'type' => 'assistant',
+                'role' => 'model',
                 'content' => $response,
             ]);
 
@@ -273,7 +275,7 @@ class ChatBox extends Component
 
             // Store error message
             $this->conversation->messages()->create([
-                'type' => 'assistant',
+                'role' => 'model',
                 'content' => 'Sorry, there was an error processing your request: ' . $e->getMessage(),
             ]);
         } finally {

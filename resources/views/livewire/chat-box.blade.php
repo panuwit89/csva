@@ -1,9 +1,9 @@
 <div class="flex flex-col h-full">
     <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
         @foreach($messages as $msg)
-            <div class="flex {{ $msg->type === 'user' ? 'justify-end' : 'justify-start' }}">
-                <div class="max-w p-4 rounded-lg {{ $msg->type === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
-                    <div class="prose prose-sm max-w-none {{ $msg->type === 'user' ? 'prose-invert' : '' }}">
+            <div class="flex {{ $msg->role === 'user' ? 'justify-end' : 'justify-start' }}">
+                <div class="max-w p-4 rounded-lg {{ $msg->role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+                    <div class="prose prose-sm max-w-none {{ $msg->role === 'user' ? 'prose-invert' : '' }}">
                         {!! Str::markdownWithTables($msg->content, [
                             'html_input' => 'strip',
                             'allow_unsafe_links' => false,
@@ -11,15 +11,15 @@
                     </div>
 
                     @if($msg->hasAttachments())
-                        <div class="mt-2 pt-2 border-t {{ $msg->type === 'user' ? 'border-blue-400' : 'border-gray-300' }}">
-                            <p class="text-sm {{ $msg->type === 'user' ? 'text-blue-100' : 'text-gray-600' }}">
+                        <div class="mt-2 pt-2 border-t {{ $msg->role === 'user' ? 'border-blue-400' : 'border-gray-300' }}">
+                            <p class="text-sm {{ $msg->role === 'user' ? 'text-blue-100' : 'text-gray-600' }}">
                                 Attachments:
                             </p>
                             <div class="flex flex-wrap gap-2 mt-1">
                                 @foreach($msg->attachments as $attachment)
                                     <a href="{{ $attachment->getUrl() }}"
                                        target="_blank"
-                                       class="flex items-center gap-1 px-2 py-1 rounded-md {{ $msg->type === 'user' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 hover:bg-gray-400' }} text-sm">
+                                       class="flex items-center gap-1 px-2 py-1 rounded-md {{ $msg->role === 'user' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 hover:bg-gray-400' }} text-sm">
                                         <span>
                                             @if($attachment->isImage())
                                                 📷
