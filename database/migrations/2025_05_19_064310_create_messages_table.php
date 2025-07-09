@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('conversation_id');
-            $table->enum('type', ['user', 'assistant']);
+            $table->enum('role', ['user', 'model']);
             $table->text('content');
             $table->timestamps();
 
