@@ -23,8 +23,6 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::post('/conversation/{conversation}/send', [ConversationController::class, 'sendMessage'])->name('conversation.send');
-    Route::post('/conversation/{conversation}/send-file', [ConversationController::class, 'sendMessageWithFiles'])->name('conversation.send-file');
     Route::resource('conversation', ConversationController::class);
 
     Route::get('/knowledge/{knowledge}/download', [KnowledgeController::class, 'download'])->name('knowledge.download');
