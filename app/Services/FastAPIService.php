@@ -19,7 +19,7 @@ class FastAPIService
     /**
      * Send a text prompt to the Fast API
      */
-    public function sendPrompt(string $prompt, int $conv_id): string
+    public function sendPrompt(string $prompt, int $conv_id, array $history): string
     {
         try {
             Log::info('Sending prompt to Fast API: ' . $prompt);
@@ -28,6 +28,7 @@ class FastAPIService
             $response = Http::timeout(60)->post("{$this->baseUrl}/api/process_prompt", [
                 'prompt' => $prompt,
                 'conv_id' => $conv_id,
+                'history' => $history
             ]);
 
             if ($response->successful()) {
@@ -62,13 +63,14 @@ class FastAPIService
     /**
      * Send files and a prompt to the Fast API
      */
-    public function sendFilesAndPrompt(array $files, string $prompt, int $conv_id): string
+    public function sendFilesAndPrompt(array $files, string $prompt, int $conv_id, array $history): string
     {
         try {
             Log::info('Sending files and prompt to Fast API', [
                 'fileCount' => count($files),
                 'prompt' => $prompt,
                 'conv_id' => $conv_id,
+                'history' => $history
             ]);
 
             // Validate files
@@ -113,6 +115,9 @@ class FastAPIService
 
             // Add the conversation id
             $http->attach('conv_id', $conv_id);
+
+            // Add the old conversation messages
+            $http->attach('history', json_encode($history));
 
             // Log the request details for debugging
             Log::info('Prepared multipart request', [
