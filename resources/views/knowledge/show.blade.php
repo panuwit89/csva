@@ -117,21 +117,45 @@
                         <!-- PDF Preview -->
                         <div class="lg:col-span-2">
                             <div class="bg-gray-50 rounded-lg p-6">
-                                <h3 class="text-lg font-medium text-gray-900 mb-4">Document Preview</h3>
+                                {{-- Depend on mime_type  --}}
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                                    @if($knowledge->mime_type === 'application/pdf')
+                                        Document Preview
+                                    @elseif($knowledge->mime_type === 'text/plain')
+                                        File Content
+                                    @else
+                                        File Information
+                                    @endif
+                                </h3>
 
-                                <div class="border rounded-lg bg-white" style="height: 600px;">
-                                    <iframe
-                                        src="{{ $knowledge->file_url }}#toolbar=1&navpanes=1&scrollbar=1"
-                                        class="w-full h-full rounded-lg"
-                                        title="PDF Preview">
-                                        <p class="p-4 text-center text-gray-500">
-                                            Your browser does not support PDF preview.
-                                            <a href="{{ route('knowledge.download', $knowledge) }}" class="text-blue-600 hover:text-blue-800 underline">
-                                                Click here to download the file
-                                            </a>
-                                        </p>
-                                    </iframe>
-                                </div>
+                                {{-- File preview depend on mime_type --}}
+                                @if($knowledge->mime_type === 'application/pdf')
+                                    {{-- For PDF --}}
+                                    <div class="border rounded-lg bg-white" style="height: 600px;">
+                                        <iframe
+                                            src="{{ $knowledge->file_url }}#toolbar=1"
+                                            class="w-full h-full rounded-lg"
+                                            title="PDF Preview">
+                                        </iframe>
+                                    </div>
+
+                                @elseif($knowledge->mime_type === 'text/plain' && $content !== null)
+                                    {{-- For TXT --}}
+                                    <div class="border rounded-lg bg-white p-4" style="height: 600px; overflow-y: auto;">
+                                        <pre class="text-sm whitespace-pre-wrap">{{ $content }}</pre>
+                                    </div>
+
+                                @else
+                                    {{-- For other type, cannot display --}}
+                                    <div class="border-2 border-dashed rounded-lg bg-white flex items-center justify-center" style="height: 600px;">
+                                        <div class="text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <p class="mt-2 text-gray-500">Preview is not available for this file type.</p>
+                                        </div>
+                                    </div>
+                                @endif
 
                                 <div class="mt-4 text-center">
                                     <p class="text-sm text-gray-500">

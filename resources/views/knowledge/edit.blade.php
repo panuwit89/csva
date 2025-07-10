@@ -71,9 +71,9 @@
                             <h4 class="font-medium text-gray-900 mb-2">Current File</h4>
                             <div class="flex items-center space-x-4">
                                 <div class="flex-shrink-0">
-                                    <div class="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
-                                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+                                        <svg class="h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                         </svg>
                                     </div>
                                 </div>
@@ -91,21 +91,21 @@
 
                         <div>
                             <label for="file" class="block text-sm font-medium text-gray-700">
-                                Replace PDF Document (Optional)
+                                Replace Document File (Optional)
                             </label>
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
-                                <div class="space-y-1 text-center">
+                                <div class="space-y-1 text-center flex flex-col items-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                                         <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                     <div class="flex text-sm text-gray-600">
                                         <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                             <span>Upload a new file</span>
-                                            <input id="file" name="file" type="file" class="sr-only" accept=".pdf" onchange="updateFileName(this)">
+                                            <input id="file" name="file" type="file" class="sr-only" accept=".pdf, .txt" onchange="updateFileName(this)">
                                         </label>
                                         <p class="pl-1">or drag and drop</p>
                                     </div>
-                                    <p class="text-xs text-gray-500">PDF up to 10MB (leave empty to keep current file)</p>
+                                    <p class="text-xs text-gray-500">PDF or TXT up to 10MB (leave empty to keep current file)</p>
                                     <p id="file-name" class="text-sm text-gray-900 mt-2"></p>
                                 </div>
                             </div>

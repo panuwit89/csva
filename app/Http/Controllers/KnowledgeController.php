@@ -49,7 +49,7 @@ class KnowledgeController extends Controller
             'description' => 'nullable|string|max:1000',
             'file' => [
                 'required',
-                File::types(['pdf'])
+                File::types(['pdf', 'txt'])
                     ->max(10 * 1024) // 10MB
             ]
         ]);
@@ -57,7 +57,8 @@ class KnowledgeController extends Controller
         try {
             $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
-            $filename = Str::uuid() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.pdf';
+            $extension = $file->getClientOriginalExtension();
+            $filename = Str::uuid() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
 
             // Store in doc directory to match your Python setup
             $filePath = $file->storeAs('doc', $filename, 'public');
@@ -88,7 +89,14 @@ class KnowledgeController extends Controller
      */
     public function show(Knowledge $knowledge)
     {
-        return view('knowledge.show', compact('knowledge'));
+        $content = null;
+        if ($knowledge->mime_type === 'text/plain') {
+            if (Storage::disk('public')->exists($knowledge->file_path)) {
+                $content = Storage::disk('public')->get($knowledge->file_path);
+            }
+        }
+
+        return view('knowledge.show', compact('knowledge', 'content'));
     }
 
     /**
@@ -109,7 +117,7 @@ class KnowledgeController extends Controller
             'description' => 'nullable|string|max:1000',
             'file' => [
                 'nullable',
-                File::types(['pdf'])
+                File::types(['pdf', 'txt'])
                     ->max(10 * 1024) // 10MB
             ]
         ]);
@@ -129,7 +137,8 @@ class KnowledgeController extends Controller
 
                 $file = $request->file('file');
                 $originalName = $file->getClientOriginalName();
-                $filename = Str::uuid() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.pdf';
+                $extension = $file->getClientOriginalExtension();
+                $filename = Str::uuid() . '_' . Str::slug(pathinfo($originalName, PATHINFO_FILENAME)) . '.' . $extension;
 
                 $filePath = $file->storeAs('doc', $filename, 'public');
 
