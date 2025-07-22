@@ -21,7 +21,7 @@ class ConversationController extends Controller
      */
     public function index()
     {
-        $conversations = Auth::user()->conversations()->latest()->get();
+        $conversations = Auth::user()->conversations()->latest('updated_at')->get();
 
         return view('conversation.index', compact('conversations'));
     }

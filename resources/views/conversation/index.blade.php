@@ -32,7 +32,7 @@
                                     <div class="flex justify-between items-center">
                                         <h3 class="font-medium">{{ $conversation->title }}</h3>
                                         <span class="text-sm text-gray-500">
-                                            {{ $conversation->created_at->diffForHumans() }}
+                                            {{ $conversation->updated_at->diffForHumans() }}
                                         </span>
                                     </div>
 
