@@ -49,7 +49,7 @@ class KnowledgeController extends Controller
             'description' => 'nullable|string|max:1000',
             'file' => [
                 'required',
-                File::types(['pdf', 'txt'])
+                File::types(['pdf', 'txt', 'json'])
                     ->max(10 * 1024) // 10MB
             ]
         ]);
@@ -90,7 +90,7 @@ class KnowledgeController extends Controller
     public function show(Knowledge $knowledge)
     {
         $content = null;
-        if ($knowledge->mime_type === 'text/plain') {
+        if (in_array($knowledge->mime_type, ['application/json', 'text/plain'])) {
             if (Storage::disk('public')->exists($knowledge->file_path)) {
                 $content = Storage::disk('public')->get($knowledge->file_path);
             }
@@ -117,7 +117,7 @@ class KnowledgeController extends Controller
             'description' => 'nullable|string|max:1000',
             'file' => [
                 'nullable',
-                File::types(['pdf', 'txt'])
+                File::types(['pdf', 'txt', 'json'])
                     ->max(10 * 1024) // 10MB
             ]
         ]);

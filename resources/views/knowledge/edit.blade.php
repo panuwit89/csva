@@ -101,11 +101,11 @@
                                     <div class="flex text-sm text-gray-600">
                                         <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                             <span>Upload a new file</span>
-                                            <input id="file" name="file" type="file" class="sr-only" accept=".pdf, .txt" onchange="updateFileName(this)">
+                                            <input id="file" name="file" type="file" class="sr-only" accept=".pdf, .txt, .json" onchange="updateFileName(this)">
                                         </label>
                                         <p class="pl-1">or drag and drop</p>
                                     </div>
-                                    <p class="text-xs text-gray-500">PDF or TXT up to 10MB (leave empty to keep current file)</p>
+                                    <p class="text-xs text-gray-500">PDF, TXT or JSON up to 10MB (leave empty to keep current file)</p>
                                     <p id="file-name" class="text-sm text-gray-900 mt-2"></p>
                                 </div>
                             </div>

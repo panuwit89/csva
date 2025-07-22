@@ -65,10 +65,10 @@
                                     <div class="flex text-sm text-gray-600 justify-center">
                                         <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                             <span id="upload-text">Upload a file</span>
-                                            <input id="file" name="file" type="file" class="sr-only" accept=".pdf, .txt" required onchange="updateFileName(this)">
+                                            <input id="file" name="file" type="file" class="sr-only" accept=".pdf, .txt, .json" required onchange="updateFileName(this)">
                                         </label>
                                     </div>
-                                    <p class="text-xs text-gray-500">PDF or TXT up to 10MB</p>
+                                    <p class="text-xs text-gray-500">PDF, TXT or JSON up to 10MB</p>
                                     <div class="h-5 flex items-center justify-center">
                                         <p id="file-name" class="text-sm text-green-600 font-medium"></p>
                                     </div>

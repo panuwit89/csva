@@ -65,12 +65,35 @@
                                                 <div class="flex items-center">
                                                     <div class="flex-shrink-0 h-10 w-10">
                                                         @if($knowledge->mime_type === 'application/pdf')
+                                                            {{-- PDF Icon 📕 --}}
                                                             <div class="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
-                                                                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                                <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                                </svg>
+                                                            </div>
+                                                        @elseif($knowledge->mime_type === 'application/json')
+                                                            {{-- JSON Icon 👨‍💻 --}}
+                                                            <div class="h-10 w-10 rounded-lg bg-yellow-100 flex items-center justify-center">
+                                                                <svg class="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25" />
+                                                                </svg>
+                                                            </div>
+                                                        @elseif($knowledge->mime_type === 'text/plain')
+                                                            {{-- Plain Text Icon 📄 --}}
+                                                            <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                                                <svg class="h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                                                </svg>
+                                                            </div>
+                                                        @elseif($knowledge->mime_type === 'text/csv')
+                                                            {{-- CSV Icon 📊 --}}
+                                                            <div class="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
+                                                                <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.375 6.375h17.25M3.375 12h17.25M3.375 17.625h17.25M5.625 12v5.625a2.25 2.25 0 002.25 2.25h8.25a2.25 2.25 0 002.25-2.25V12M5.625 12V6.375a2.25 2.25 0 012.25-2.25h8.25a2.25 2.25 0 012.25 2.25V12" />
                                                                 </svg>
                                                             </div>
                                                         @else
+                                                            {{-- Generic File Icon 📁 --}}
                                                             <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
                                                                 <svg class="h-6 w-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />

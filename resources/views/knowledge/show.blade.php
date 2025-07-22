@@ -121,6 +121,8 @@
                                 <h3 class="text-lg font-medium text-gray-900 mb-4">
                                     @if($knowledge->mime_type === 'application/pdf')
                                         Document Preview
+                                    @elseif($knowledge->mime_type === 'application/json')
+                                        JSON File Content
                                     @elseif($knowledge->mime_type === 'text/plain')
                                         File Content
                                     @else
@@ -139,8 +141,8 @@
                                         </iframe>
                                     </div>
 
-                                @elseif($knowledge->mime_type === 'text/plain' && $content !== null)
-                                    {{-- For TXT --}}
+                                @elseif(in_array($knowledge->mime_type, ['application/json', 'text/plain']) && $content !== null)
+                                    {{-- For TXT and JSON --}}
                                     <div class="border rounded-lg bg-white p-4" style="height: 600px; overflow-y: auto;">
                                         <pre class="text-sm whitespace-pre-wrap">{{ $content }}</pre>
                                     </div>
