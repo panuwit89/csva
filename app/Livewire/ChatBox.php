@@ -190,7 +190,7 @@ class ChatBox extends Component
             $fastAPIService = app(FastAPIService::class);
             $conversationRepository = app(ConversationRepository::class);
 
-            $history_messages = $conversationRepository->getConversationMessage($this->conversation->id);
+            $history_messages = $conversationRepository->getConversationMessageWithAttachments($this->conversation->id);
 
             $uploadedFiles = [];
 
@@ -244,6 +244,8 @@ class ChatBox extends Component
                 'role' => 'model',
                 'content' => $response,
             ]);
+
+            $conversationRepository->update(['updated_at' => now()], $this->conversation->id);
 
             // Call define chat name directly
             try {

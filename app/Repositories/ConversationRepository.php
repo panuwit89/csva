@@ -12,10 +12,28 @@ class ConversationRepository
 
     private string $model = Conversation::class;
 
-    public function getConversationMessage(int $conversationId)
+    public function getConversationMessageWithAttachments(int $conversationId)
     {
-        return Message::where('conversation_id', $conversationId)
-            ->select('role', 'content')
+        $conversation = Conversation::where('id', $conversationId)->first();
+
+        $messages = $conversation->messages()
+            ->with('attachments')
             ->get();
+
+        return $messages->map(function ($message) {
+            $attachmentsData = $message->attachments->map(function ($attachment) {
+                return [
+                    'url'           => $attachment->getUrl(),
+                    'original_name' => $attachment->original_name,
+                    'mime_type'     => $attachment->mime_type,
+                ];
+            });
+
+            return [
+                'role'        => $message->role,
+                'content'     => $message->content,
+                'attachments' => $attachmentsData->toArray(),
+            ];
+        });
     }
 }
