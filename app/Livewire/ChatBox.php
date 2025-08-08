@@ -9,6 +9,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\UploadedFile;
+use App\Jobs\ProcessPromptWithFastAPI;
 
 class ChatBox extends Component
 {
@@ -21,6 +22,7 @@ class ChatBox extends Component
     public bool $loading = false;
     public bool $showFileUpload = false;
     public bool $showSuggestedPrompts = false;
+    public bool $isWaitingForResponse = false;
 
     protected $rules = [
         'message' => 'required|string',
@@ -186,90 +188,137 @@ class ChatBox extends Component
         $this->loading = true;
         $this->showSuggestedPrompts = false; // Hide suggested prompts after sending message
 
+//        try {
+//            $fastAPIService = app(FastAPIService::class);
+//            $conversationRepository = app(ConversationRepository::class);
+//
+//            $history_messages = $conversationRepository->getConversationMessageWithAttachments($this->conversation->id);
+//
+//            $uploadedFiles = [];
+//
+//            if (count($this->files) > 0) {
+//                foreach ($this->files as $file) {
+//                    // Create proper UploadedFile instances from Livewire temporary files
+//                    $tempPath = $file->getRealPath();
+//
+//                    $uploadedFile = new UploadedFile(
+//                        $tempPath,
+//                        $file->getClientOriginalName(),
+//                        $file->getMimeType(),
+//                        null,
+//                        true
+//                    );
+//
+//                    $uploadedFiles[] = $uploadedFile;
+//                }
+//
+//                // Get response from Fast API with files
+//                $response = $fastAPIService->sendFilesAndPrompt($uploadedFiles, $this->message, $this->conversation->id);
+//            } else {
+//                // No files, just send text prompt
+//                $response = $fastAPIService->sendPrompt($this->message, $this->conversation->id, $history_messages->toArray());
+//            }
+//
+//            // Store user message
+//            $userMessage = $this->conversation->messages()->create([
+//                'role' => 'user',
+//                'content' => $this->message,
+//            ]);
+//
+//            // Store file attachments if any
+//            if (count($this->files) > 0) {
+//                foreach ($this->files as $file) {
+//                    // Save files to permanent storage
+//                    $path = $file->store('chat_attachments/' . $this->conversation->id, 'public');
+//
+//                    // Create attachment record
+//                    $userMessage->attachments()->create([
+//                        'path' => $path,
+//                        'original_name' => $file->getClientOriginalName(),
+//                        'mime_type' => $file->getMimeType(),
+//                        'size' => $file->getSize(),
+//                    ]);
+//                }
+//            }
+//
+//            // Store model response
+//            $this->conversation->messages()->create([
+//                'role' => 'model',
+//                'content' => $response,
+//            ]);
+//
+//            $conversationRepository->update(['updated_at' => now()], $this->conversation->id);
+//
+//            // Call define chat name directly
+//            try {
+//                // If not defined
+//                if ($this->conversation->title == "New Conversation") {
+//                    $chatName = $fastAPIService->defineChatName($this->conversation->id);
+//                    $conversationRepository->update(['title' => $chatName], $this->conversation->id);
+//                    Log::info('Successfully defined chat name: ' . $chatName);
+//                }
+//            } catch (\Exception $e) {
+//                Log::error('Failed to define chat name: ' . $e->getMessage());
+//            }
+//
+//            // Reset the properties
+//            $this->message = '';
+//            $this->files = [];
+//            $this->newFiles = [];
+//            $this->showFileUpload = false;
+//            $this->resetErrorBag();
+//
+//            // Clear the input field via JavaScript
+//            $this->js("document.getElementById('sendMessageComplete').value = ''");
+
         try {
-            $fastAPIService = app(FastAPIService::class);
-            $conversationRepository = app(ConversationRepository::class);
+            // --- ส่วนที่แก้ไข ---
 
-            $history_messages = $conversationRepository->getConversationMessageWithAttachments($this->conversation->id);
-
-            $uploadedFiles = [];
-
-            if (count($this->files) > 0) {
-                foreach ($this->files as $file) {
-                    // Create proper UploadedFile instances from Livewire temporary files
-                    $tempPath = $file->getRealPath();
-
-                    $uploadedFile = new UploadedFile(
-                        $tempPath,
-                        $file->getClientOriginalName(),
-                        $file->getMimeType(),
-                        null,
-                        true
-                    );
-
-                    $uploadedFiles[] = $uploadedFile;
-                }
-
-                // Get response from Fast API with files
-                $response = $fastAPIService->sendFilesAndPrompt($uploadedFiles, $this->message, $this->conversation->id, $history_messages->toArray());
-            } else {
-                // No files, just send text prompt
-                $response = $fastAPIService->sendPrompt($this->message, $this->conversation->id, $history_messages->toArray());
-            }
-
-            // Store user message
+            // 1. บันทึกข้อความและไฟล์ของผู้ใช้ลง DB ทันที เพื่อให้ User เห็นข้อความตัวเองเลย
             $userMessage = $this->conversation->messages()->create([
                 'role' => 'user',
                 'content' => $this->message,
             ]);
 
-            // Store file attachments if any
+            $attachmentIds = []; // 👈 สร้าง array เพื่อเก็บ ID ของไฟล์แนบ
             if (count($this->files) > 0) {
                 foreach ($this->files as $file) {
-                    // Save files to permanent storage
+                    // 2. บันทึกไฟล์ลง storage ถาวร (เช่น public)
                     $path = $file->store('chat_attachments/' . $this->conversation->id, 'public');
 
-                    // Create attachment record
-                    $userMessage->attachments()->create([
+                    // 3. สร้าง attachment record ในฐานข้อมูล
+                    $attachment = $userMessage->attachments()->create([
                         'path' => $path,
                         'original_name' => $file->getClientOriginalName(),
                         'mime_type' => $file->getMimeType(),
                         'size' => $file->getSize(),
                     ]);
+
+                    // 4. เก็บ ID ของ attachment ไว้
+                    $attachmentIds[] = $attachment->id;
                 }
             }
 
-            // Store model response
-            $this->conversation->messages()->create([
-                'role' => 'model',
-                'content' => $response,
-            ]);
+            // 5. ส่ง ID ของไฟล์แนบไปให้ Job (ไม่ใช่ path)
+            ProcessPromptWithFastAPI::dispatch(
+                $this->conversation->id,
+                $this->message,
+                $attachmentIds // 👈 ส่ง array ของ ID ไปแทน
+            );
 
-            $conversationRepository->update(['updated_at' => now()], $this->conversation->id);
+            $this->isWaitingForResponse = true;
 
-            // Call define chat name directly
-            try {
-                // If not defined
-                if ($this->conversation->title == "New Conversation") {
-                    $chatName = $fastAPIService->defineChatName($this->conversation->id);
-                    $conversationRepository->update(['title' => $chatName], $this->conversation->id);
-                    Log::info('Successfully defined chat name: ' . $chatName);
-                }
-            } catch (\Exception $e) {
-                Log::error('Failed to define chat name: ' . $e->getMessage());
-            }
-
-            // Reset the properties
+            // 3. รีเซ็ตฟอร์มทันทีเพื่อให้ User ใช้งานต่อได้เลย
             $this->message = '';
             $this->files = [];
             $this->newFiles = [];
             $this->showFileUpload = false;
             $this->resetErrorBag();
 
-            // Clear the input field via JavaScript
-            $this->js("document.getElementById('sendMessageComplete').value = ''");
-
+            // เราจะไม่รอ $response จาก FastAPI อีกต่อไป และจะไม่สร้าง message ของ 'model' ในนี้
+            // --- จบส่วนที่แก้ไข ---
         } catch (\Exception $e) {
+            $this->isWaitingForResponse = false;
             Log::error('Error in ChatBox sendMessage: ' . $e->getMessage(), [
                 'exception' => get_class($e),
                 'trace' => $e->getTraceAsString()
@@ -287,8 +336,33 @@ class ChatBox extends Component
 
     public function render()
     {
+        $this->conversation->load(['messages' => function ($query) {
+            $query->latest();
+        }]);
+        $messages = $this->conversation->messages;
+
+//        if ($messages->isNotEmpty()) {
+//            $latestMessageRole = $messages->first()->role;
+//            $this->isWaitingForResponse = ($latestMessageRole === 'user');
+//
+//            // ❗️ ย้าย Log เข้ามาไว้ในนี้
+//            Log::info('ChatBox Rendering (Has Messages):', [
+//                'conversation_id' => $this->conversation->id,
+//                'latest_message_role' => $latestMessageRole,
+//                'isWaitingForResponse' => $this->isWaitingForResponse,
+//            ]);
+//        } else {
+//            $this->isWaitingForResponse = false;
+//
+//            // ❗️ เพิ่ม Log สำหรับกรณีที่ยังไม่มีข้อความ
+//            Log::info('ChatBox Rendering (No Messages):', [
+//                'conversation_id' => $this->conversation->id,
+//                'isWaitingForResponse' => $this->isWaitingForResponse,
+//            ]);
+//        }
+
         return view('livewire.chat-box', [
-            'messages' => $this->conversation->messages()->latest()->get(),
+            'messages' => $messages,
         ]);
     }
 }

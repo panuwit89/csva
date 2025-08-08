@@ -63,99 +63,183 @@ class FastAPIService
     /**
      * Send files and a prompt to the Fast API
      */
-    public function sendFilesAndPrompt(array $files, string $prompt, int $conv_id, array $history): string
+//    public function sendFilesAndPrompt(array $files, string $prompt, int $conv_id): string
+//    {
+//        try {
+//            Log::info('Sending files and prompt to Fast API', [
+//                'fileCount' => count($files),
+//                'prompt' => $prompt,
+//                'conv_id' => $conv_id,
+////                'history' => $history
+//            ]);
+//
+//            // Validate files
+//            $validFiles = array_filter($files, function($file) {
+//                return $file instanceof UploadedFile && $file->isValid() && file_exists($file->getRealPath());
+//            });
+//
+//            if (empty($validFiles)) {
+//                Log::error('No valid files to send');
+//                return 'No valid files were provided.';
+//            }
+//
+//            // Create multipart request
+//            $http = Http::timeout(120)->asMultipart();
+//
+//            // Add the prompt first
+//            $http->attach('custom_prompt', $prompt);
+//
+//            // Add each file to the request
+//            foreach ($validFiles as $index => $file) {
+//                $filePath = $file->getRealPath();
+//
+//                if (!file_exists($filePath)) {
+//                    Log::error("File does not exist: " . $filePath);
+//                    continue;
+//                }
+//
+//                $fileContents = file_get_contents($filePath);
+//                if ($fileContents === false) {
+//                    Log::error("Could not read file: " . $file->getClientOriginalName());
+//                    continue;
+//                }
+//
+//                // Use attach method for files
+//                $http->attach(
+//                    'files',
+//                    $fileContents,
+//                    $file->getClientOriginalName(),
+//                    ['Content-Type' => $file->getMimeType()]
+//                );
+//            }
+//
+//            // Add the conversation id
+//            $http->attach('conv_id', $conv_id);
+//
+//            // Add the old conversation messages
+////            $http->attach('history', json_encode($history));
+//
+//            // Log the request details for debugging
+//            Log::info('Prepared multipart request', [
+//                'validFileCount' => count($validFiles)
+//            ]);
+//
+//            // Send the request
+//            $response = $http->post("{$this->baseUrl}/api/process_files_and_prompt");
+//
+//            if ($response->successful()) {
+//                $data = $response->json();
+//                Log::info('Received file processing response', [
+//                    'success' => true,
+//                    'response' => $data
+//                ]);
+//
+//                if (isset($data['result'])) {
+//                    return is_array($data['result']) ? ($data['result'][0] ?? 'No response') : $data['result'];
+//                }
+//
+//                if (is_array($data) && !empty($data)) {
+//                    return $data[0] ?? 'No response';
+//                }
+//
+//                return 'Sorry, I could not process your request. Unexpected response format.';
+//            } else {
+//                Log::error('Fast API error when sending files', [
+//                    'status' => $response->status(),
+//                    'body' => $response->body(),
+//                    'headers' => $response->headers()
+//                ]);
+//                return 'There was an error communicating with the AI service when processing files. Status: ' . $response->status();
+//            }
+//        } catch (\Exception $e) {
+//            Log::error('Error connecting to Fast API with files: ' . $e->getMessage(), [
+//                'exception' => get_class($e),
+//                'trace' => $e->getTraceAsString()
+//            ]);
+//            return 'Could not connect to the AI service when processing files. Error: ' . $e->getMessage();
+//        }
+//    }
+
+    public function sendFilesAndPrompt(array $files, string $prompt, int $conv_id): string
     {
         try {
-            Log::info('Sending files and prompt to Fast API', [
+            Log::info('Sending files and prompt via Job to Fast API', [
                 'fileCount' => count($files),
                 'prompt' => $prompt,
                 'conv_id' => $conv_id,
-                'history' => $history
             ]);
 
-            // Validate files
-            $validFiles = array_filter($files, function($file) {
-                return $file instanceof UploadedFile && $file->isValid() && file_exists($file->getRealPath());
-            });
+            // 👈 1. ลบการตรวจสอบไฟล์แบบเก่า (Validation)
+            // เราจะตรวจสอบไฟล์ตอนวนลูปแทน
 
-            if (empty($validFiles)) {
-                Log::error('No valid files to send');
-                return 'No valid files were provided.';
+            if (empty($files)) {
+                Log::error('No files provided to send');
+                return 'No files were provided.';
             }
 
-            // Create multipart request
             $http = Http::timeout(120)->asMultipart();
-
-            // Add the prompt first
             $http->attach('custom_prompt', $prompt);
+            $http->attach('conv_id', (string)$conv_id); // 👈 ควรแปลงเป็น string เพื่อความแน่นอน
 
-            // Add each file to the request
-            foreach ($validFiles as $index => $file) {
-                $filePath = $file->getRealPath();
+            $validFileCount = 0;
+            // 👈 2. แก้ไขการวนลูปเพื่ออ่านข้อมูลจาก array
+            foreach ($files as $fileInfo) {
+                $filePath = $fileInfo['path'];
+                $originalName = $fileInfo['original_name'];
 
                 if (!file_exists($filePath)) {
-                    Log::error("File does not exist: " . $filePath);
+                    Log::error("File does not exist in job: " . $filePath);
                     continue;
                 }
 
                 $fileContents = file_get_contents($filePath);
                 if ($fileContents === false) {
-                    Log::error("Could not read file: " . $file->getClientOriginalName());
+                    Log::error("Could not read file from job: " . $originalName);
                     continue;
                 }
 
-                // Use attach method for files
+                // 👈 3. ดึง MimeType จากไฟล์โดยตรง
+                $mimeType = mime_content_type($filePath);
+
+                // แนบไฟล์เข้ากับ request
                 $http->attach(
                     'files',
                     $fileContents,
-                    $file->getClientOriginalName(),
-                    ['Content-Type' => $file->getMimeType()]
+                    $originalName,
+                    ['Content-Type' => $mimeType]
                 );
+                $validFileCount++;
             }
 
-            // Add the conversation id
-            $http->attach('conv_id', $conv_id);
+            if ($validFileCount === 0) {
+                Log::error('After processing, no valid files remained to be sent.');
+                return 'No valid files could be processed.';
+            }
 
-            // Add the old conversation messages
-            $http->attach('history', json_encode($history));
-
-            // Log the request details for debugging
-            Log::info('Prepared multipart request', [
-                'validFileCount' => count($validFiles)
+            Log::info('Prepared multipart request from job', [
+                'validFileCount' => $validFileCount
             ]);
 
-            // Send the request
+            // ส่ง request
             $response = $http->post("{$this->baseUrl}/api/process_files_and_prompt");
 
+            // ส่วนที่จัดการ response ยังคงเหมือนเดิม
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('Received file processing response', [
-                    'success' => true,
-                    'response' => $data
-                ]);
-
+                Log::info('Received file processing response', ['success' => true, 'response' => $data]);
                 if (isset($data['result'])) {
                     return is_array($data['result']) ? ($data['result'][0] ?? 'No response') : $data['result'];
                 }
-
-                if (is_array($data) && !empty($data)) {
-                    return $data[0] ?? 'No response';
-                }
-
                 return 'Sorry, I could not process your request. Unexpected response format.';
             } else {
                 Log::error('Fast API error when sending files', [
                     'status' => $response->status(),
-                    'body' => $response->body(),
-                    'headers' => $response->headers()
+                    'body' => $response->body()
                 ]);
                 return 'There was an error communicating with the AI service when processing files. Status: ' . $response->status();
             }
         } catch (\Exception $e) {
-            Log::error('Error connecting to Fast API with files: ' . $e->getMessage(), [
-                'exception' => get_class($e),
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Error in sendFilesAndPrompt: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return 'Could not connect to the AI service when processing files. Error: ' . $e->getMessage();
         }
     }
