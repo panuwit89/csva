@@ -2,10 +2,10 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Add Knowledge Document') }}
+                {{ __('เพิ่มเอกสารอ้างอิง') }}
             </h2>
             <x-button :href="route('knowledge.index')">
-                Back to Knowledge
+                กลับไปยังรายการเอกสารอ้างอิง
             </x-button>
         </div>
     </x-slot>
@@ -25,14 +25,14 @@
 
                         <div>
                             <label for="title" class="block text-sm font-medium text-gray-700">
-                                Document Title <span class="text-red-500">*</span>
+                                ชื่อเรื่อง <span class="text-red-500">*</span>
                             </label>
                             <input type="text"
                                    name="title"
                                    id="title"
                                    value="{{ old('title') }}"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('title') border-red-300 @enderror"
-                                   placeholder="Enter document title"
+                                   placeholder="กำหนดชื่อเรื่องเอกสาร"
                                    required>
                             @error('title')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -41,13 +41,13 @@
 
                         <div>
                             <label for="description" class="block text-sm font-medium text-gray-700">
-                                Description
+                                คำอธิบาย
                             </label>
                             <textarea name="description"
                                       id="description"
                                       rows="3"
                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('description') border-red-300 @enderror"
-                                      placeholder="Enter a brief description of the document (optional)">{{ old('description') }}</textarea>
+                                      placeholder="กำหนดคำอธิบายของเอกสาร (ไม่บังคับ)">{{ old('description') }}</textarea>
                             @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -55,7 +55,7 @@
 
                         <div>
                             <label for="file" class="block text-sm font-medium text-gray-700">
-                                Document File <span class="text-red-500">*</span>
+                                ไฟล์เอกสาร <span class="text-red-500">*</span>
                             </label>
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors min-h-[120px]">
                                 <div class="space-y-1 text-center flex flex-col justify-center">
@@ -64,11 +64,11 @@
                                     </svg>
                                     <div class="flex text-sm text-gray-600 justify-center">
                                         <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                            <span id="upload-text">Upload a file</span>
+                                            <span id="upload-text">อัปโหลดไฟล์</span>
                                             <input id="file" name="file" type="file" class="sr-only" accept=".pdf, .txt, .json" required onchange="updateFileName(this)">
                                         </label>
                                     </div>
-                                    <p class="text-xs text-gray-500">PDF, TXT or JSON up to 10MB</p>
+                                    <p class="text-xs text-gray-500">อัปโหลดไฟล์ PDF, TXT หรือ JSON ไม่เกิน 10MB</p>
                                     <div class="h-5 flex items-center justify-center">
                                         <p id="file-name" class="text-sm text-green-600 font-medium"></p>
                                     </div>
@@ -81,10 +81,10 @@
 
                         <div class="flex items-center justify-end space-x-4">
                             <a href="{{ route('knowledge.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
-                                Cancel
+                                ยกเลิก
                             </a>
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                Upload Document
+                                อัปโหลดเอกสาร
                             </button>
                         </div>
                     </form>

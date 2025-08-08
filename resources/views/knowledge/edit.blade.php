@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Edit Knowledge Document') }}
+                {{ __('แก้ไขเอกสารอ้างอิง') }}
             </h2>
             <div class="flex space-x-2">
                 <x-button :href="route('knowledge.show', $knowledge)" color="blue">
@@ -10,13 +10,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                     </svg>
-                    View
+                    ดูข้อมูลเอกสาร
                 </x-button>
                 <x-button :href="route('knowledge.index')">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    Back to Knowledge
+                    กลับไปยังรายการเอกสารอ้างอิง
                 </x-button>
             </div>
         </div>
@@ -38,14 +38,14 @@
 
                         <div>
                             <label for="title" class="block text-sm font-medium text-gray-700">
-                                Document Title <span class="text-red-500">*</span>
+                                ชื่อเรื่อง <span class="text-red-500">*</span>
                             </label>
                             <input type="text"
                                    name="title"
                                    id="title"
                                    value="{{ old('title', $knowledge->title) }}"
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('title') border-red-300 @enderror"
-                                   placeholder="Enter document title"
+                                   placeholder="กำหนดชื่อเรื่องเอกสาร"
                                    required>
                             @error('title')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -54,13 +54,13 @@
 
                         <div>
                             <label for="description" class="block text-sm font-medium text-gray-700">
-                                Description
+                                คำอธิบาย
                             </label>
                             <textarea name="description"
                                       id="description"
                                       rows="3"
                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 @error('description') border-red-300 @enderror"
-                                      placeholder="Enter a brief description of the document (optional)">{{ old('description', $knowledge->description) }}</textarea>
+                                      placeholder="กำหนดคำอธิบายของเอกสาร (ไม่บังคับ)">{{ old('description', $knowledge->description) }}</textarea>
                             @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -68,7 +68,7 @@
 
                         <!-- Current File Information -->
                         <div class="bg-gray-50 rounded-lg p-4">
-                            <h4 class="font-medium text-gray-900 mb-2">Current File</h4>
+                            <h4 class="font-medium text-gray-900 mb-2">ไฟล์ปัจจุบัน</h4>
                             <div class="flex items-center space-x-4">
                                 <div class="flex-shrink-0">
                                     <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
@@ -83,7 +83,7 @@
                                 </div>
                                 <div class="flex-shrink-0">
                                     <a href="{{ route('knowledge.download', $knowledge) }}" class="text-indigo-600 hover:text-indigo-500 text-sm">
-                                        Download
+                                        ดาวน์โหลด
                                     </a>
                                 </div>
                             </div>
@@ -91,7 +91,7 @@
 
                         <div>
                             <label for="file" class="block text-sm font-medium text-gray-700">
-                                Replace Document File (Optional)
+                                ไฟล์ใหม่ (ไม่บังคับ)
                             </label>
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
                                 <div class="space-y-1 text-center flex flex-col items-center">
@@ -100,12 +100,12 @@
                                     </svg>
                                     <div class="flex text-sm text-gray-600">
                                         <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
-                                            <span>Upload a new file</span>
+                                            <span>อัปโหลดไฟล์ใหม่</span>
                                             <input id="file" name="file" type="file" class="sr-only" accept=".pdf, .txt, .json" onchange="updateFileName(this)">
                                         </label>
-                                        <p class="pl-1">or drag and drop</p>
+{{--                                        <p class="pl-1">or drag and drop</p>--}}
                                     </div>
-                                    <p class="text-xs text-gray-500">PDF, TXT or JSON up to 10MB (leave empty to keep current file)</p>
+                                    <p class="text-xs text-gray-500">อัปโหลดไฟล์ PDF, TXT หรือ JSON ไม่เกิน 10MB (ไม่ต้องทำการอัปโหลดไฟล์ใหม่ หากต้องการใช้ไฟล์ปัจจุบัน)</p>
                                     <p id="file-name" class="text-sm text-gray-900 mt-2"></p>
                                 </div>
                             </div>
@@ -116,10 +116,10 @@
 
                         <div class="flex items-center justify-end space-x-4">
                             <a href="{{ route('knowledge.show', $knowledge) }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
-                                Cancel
+                                ยกเลิก
                             </a>
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                                Update Document
+                                อัปเดตเอกสาร
                             </button>
                         </div>
                     </form>

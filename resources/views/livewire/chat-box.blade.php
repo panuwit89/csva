@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full">
+<div class="flex flex-col h-full" wire:poll.2s>
     <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
         @foreach($messages as $msg)
             <div class="flex {{ $msg->role === 'user' ? 'justify-end' : 'justify-start' }}">
@@ -13,7 +13,7 @@
                     @if($msg->hasAttachments())
                         <div class="mt-2 pt-2 border-t {{ $msg->role === 'user' ? 'border-blue-400' : 'border-gray-300' }}">
                             <p class="text-sm {{ $msg->role === 'user' ? 'text-blue-100' : 'text-gray-600' }}">
-                                Attachments:
+                                รายการไฟล์แนบ:
                             </p>
                             <div class="flex flex-wrap gap-2 mt-1">
                                 @foreach($msg->attachments as $attachment)
@@ -40,6 +40,17 @@
                 </div>
             </div>
         @endforeach
+
+        @if($isWaitingForResponse)
+            <div class="flex justify-start">
+                <div class="max-w-3/4 p-3 rounded-lg bg-gray-200 text-gray-800">
+                    <div class="flex items-center space-x-2">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                        <span>กำลังประมวลผล...</span>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         @if($showSuggestedPrompts)
             <div class="flex justify-center mt-8">
@@ -85,15 +96,6 @@
                 </div>
             </div>
         @endif
-
-        <div class="flex justify-start" wire:loading wire:target="sendMessage">
-            <div class="max-w-3/4 p-3 rounded-lg bg-gray-200 text-gray-800">
-                <div class="flex items-center space-x-2">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                    <span>Thinking...</span>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="border-t p-4">
@@ -103,18 +105,18 @@
                         wire:click="toggleSuggestedPrompts"
                         class="bg-green-200 text-green-700 px-4 py-2 rounded-lg hover:bg-green-300"
                     {{ $loading ? 'disabled' : '' }}>
-                    Prompts
+                    ตัวอย่างคำถาม
                 </button>
                 <input type="text" wire:model.live="message"
                        class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                       placeholder="Type your message..."
+                       placeholder="พิมพ์ข้อความของคุณ"
                        id="sendMessageComplete"
                     {{ $loading ? 'disabled' : '' }}>
                 <button type="button"
                         wire:click="toggleFileUpload"
                         class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 relative"
                     {{ $loading ? 'disabled' : '' }}>
-                    {{ $showFileUpload ? 'Hide Files' : 'Add Files' }}
+                    {{ $showFileUpload ? 'ซ่อนไฟล์แนบ' : 'เพิ่มไฟล์แนบ' }}
                     @if(count($files) > 0)
                         <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                             {{ count($files) }}
@@ -124,7 +126,7 @@
                 <button type="submit"
                         class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     {{ $loading ? 'disabled' : '' }}>
-                    Send
+                    ส่งข้อความ
                 </button>
             </div>
 

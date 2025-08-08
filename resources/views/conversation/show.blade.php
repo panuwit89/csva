@@ -9,11 +9,11 @@
                     @csrf
                     @method('DELETE')
                     <x-button type="submit" color="red">
-                        Delete
+                        ลบการสนทนา
                     </x-button>
                 </form>
                 <x-button :href="route('conversation.index')">
-                    Back to Conversations
+                    กลับไปยังรายการการสนทนา
                 </x-button>
             </div>
         </div>

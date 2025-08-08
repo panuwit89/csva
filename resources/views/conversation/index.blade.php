@@ -2,12 +2,12 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Conversations') }}
+                {{ __('รายการการสนทนา') }}
             </h2>
             <form action="{{ route('conversation.store') }}" method="POST">
                 @csrf
                 <x-button>
-                    {{ __('New Conversation') }}
+                    {{ __('สร้างการสนทนาใหม่') }}
                 </x-button>
             </form>
         </div>
@@ -19,9 +19,9 @@
                 <div class="p-6 bg-white border-b border-gray-200">
                     @if($conversations->isEmpty())
                         <div class="text-center py-8">
-                            <p class="text-gray-500">You don't have any conversations yet.</p>
+                            <p class="text-gray-500">คุณยังไม่มีประวัติการสนทนา</p>
                             <p class="mt-4">
-                                Start a new conversation by clicking the "New Conversation" button above.
+                                โปรดกดปุ่ม "สร้างการสนทนาใหม่" เพื่อเริ่มต้นการสนทนา
                             </p>
                         </div>
                     @else

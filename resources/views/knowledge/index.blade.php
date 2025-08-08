@@ -2,18 +2,18 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Knowledge Base') }}
+                {{ __('รายการเอกสารอ้างอิง') }}
             </h2>
             <div class="flex justify-content-end space-x-4">
                 <form action="{{ route('knowledge.refresh') }}" method="POST"  onsubmit="return confirm('Are you sure you want to refresh the knowledge? This action takes some time.')">
                     @csrf
 {{--                    @method('POST')--}}
                     <x-button type="submit" color="green">
-                        Refresh
+                        อัปเดตความรู้อ้างอิง
                     </x-button>
                 </form>
                 <x-button :href="route('knowledge.create')">
-                    Add Document
+                    เพิ่มเอกสารใหม่
                 </x-button>
             </div>
         </div>
@@ -41,19 +41,19 @@
                                 <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Document
+                                        รายการเอกสาร
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        File Info
+                                        ข้อมูลเอกสาร
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Uploaded By
+                                        อัปโหลดโดย
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
+                                        สถานะ
                                     </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
+                                        การใช้งาน
                                     </th>
                                 </tr>
                                 </thead>
@@ -190,8 +190,8 @@
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                             </svg>
-                            <p class="mt-2 text-gray-500">No documents</p>
-                            <p class="mt-2">Get started by uploading your first knowledge document.</p>
+                            <p class="mt-2 text-gray-500">ไม่มีรายการความรู้อ้างอิง</p>
+                            <p class="mt-2">โปรดอัปโหลดเอกสารอ้างอิง</p>
                         </div>
                     @endif
                 </div>

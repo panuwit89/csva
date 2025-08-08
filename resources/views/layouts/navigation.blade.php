@@ -16,10 +16,10 @@
 {{--                        {{ __('Dashboard') }}--}}
 {{--                    </x-nav-link>--}}
                     <x-nav-link :href="route('conversation.index')" :active="request()->routeIs('conversation.index')">
-                        {{ __('Conversation') }}
+                        {{ __('การสนทนา') }}
                     </x-nav-link>
                     <x-nav-link :href="route('knowledge.index')" :active="request()->routeIs('knowledge.index')">
-                        {{ __('Knowledge') }}
+                        {{ __('เอกสารอ้างอิง') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -43,7 +43,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('โปรไฟล์') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -53,7 +53,7 @@
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                {{ __('ออกจากระบบ') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>
