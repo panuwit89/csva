@@ -45,6 +45,10 @@ npm install
 ```bash
 npm run dev
 ```
+### Run Queue
+```
+sail artisan queue:work
+```
 ### Compose Down Project
 ```bash
 sail down
