@@ -32,5 +32,13 @@
                 {{ $slot }}
             </main>
         </div>
+        <script>
+            function openMyModal() {
+                // สร้าง event แบบกำหนดเองชื่อ 'open-the-modal'
+                const event = new Event('open-the-modal');
+                // ส่ง event นี้ออกไปในระดับ window
+                window.dispatchEvent(event);
+            }
+        </script>
     </body>
 </html>
