@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full" wire:poll.2s>
+<div class="flex flex-col h-full" @if($isWaitingForResponse) wire:poll.2s="checkForResponse" @endif>
     <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
         @foreach($messages as $msg)
             <div class="flex {{ $msg->role === 'user' ? 'justify-end' : 'justify-start' }}">
