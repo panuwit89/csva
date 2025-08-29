@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::delete('conversation/multipleDelete', [ConversationController::class, 'multipleDelete'])->name('conversation.multipleDelete');
     Route::resource('conversation', ConversationController::class);
 
     Route::get('/knowledge/{knowledge}/download', [KnowledgeController::class, 'download'])->name('knowledge.download');
@@ -30,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/knowledge/refresh', [KnowledgeController::class, 'refreshKnowledge'])->name('knowledge.refresh');
     Route::get('/knowledge/stats', [KnowledgeController::class, 'getKnowledgeStats'])->name('knowledge.stats');
     Route::resource('knowledge', KnowledgeController::class);
+
+    Route::delete('/profile/documents/{document}', [ProfileController::class, 'destroyDocument'])->name('profile.document.destroy');
 });
 
 require __DIR__.'/auth.php';
