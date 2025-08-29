@@ -61,9 +61,20 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                         @foreach($this->suggestedPrompts as $category)
+                            @php
+                                $isRecommended = in_array($category['title'], ['ปฏิทินการศึกษา', 'หลักสูตรวิทย์คอม', 'วิชาศึกษาทั่วไป', 'อื่นๆ']);
+                            @endphp
+
                             <div class="relative group">
-                                <button class="w-full flex items-start gap-3 p-4 text-left bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200 {{ $loading ? 'opacity-50 cursor-not-allowed' : '' }}"
+                                <button class="relative w-full flex items-start gap-3 p-4 text-left bg-white border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all duration-200 {{ $loading ? 'opacity-50 cursor-not-allowed' : '' }}"
                                     {{ $loading ? 'disabled' : '' }}>
+
+                                    @if($isRecommended)
+                                        <div class="absolute z-10 -top-3 -right-3 transform rotate-12 bg-red-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg animate-flame">
+                                            🔥 นิยม
+                                        </div>
+                                    @endif
+
                                     <div class="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-lg group-hover:bg-blue-50 transition-colors">
                                         {{ $category['icon'] }}
                                     </div>
@@ -103,9 +114,12 @@
             <div class="flex gap-2">
                 <button type="button"
                         wire:click="toggleSuggestedPrompts"
-                        class="bg-green-200 text-green-700 px-4 py-2 rounded-lg hover:bg-green-300"
+                        class="relative bg-green-200 text-green-700 px-4 py-2 rounded-lg hover:bg-green-300"
                     {{ $loading ? 'disabled' : '' }}>
                     ตัวอย่างคำถาม
+                    <div class="absolute z-10 -top-3 -right-3 transform rotate-12 bg-blue-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-lg animate-thumb-up">
+                        👍 แนะนำ
+                    </div>
                 </button>
                 <input type="text" wire:model.live="message"
                        class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -298,6 +312,60 @@
             background-color: transparent;
             padding: 0;
             color: inherit;
+        }
+
+        .prose pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* --- เพิ่มโค้ดส่วนนี้เข้าไป --- */
+        .animate-flame {
+            /* ใช้ animation ชื่อ flicker, ระยะเวลา 1.5 วินาที, เล่นวนซ้ำไม่สิ้นสุด */
+            animation: flicker 1.5s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+                /* ใช้ text-shadow สร้างเอฟเฟกต์แสงไฟ */
+                text-shadow: 0 0 5px #f59e0b, 0 0 10px #ef4444; /* amber-500, red-500 */
+            }
+            25% {
+                transform: scale(1.1) rotate(-3deg);
+                opacity: 0.9;
+                text-shadow: 0 0 8px #f97316, 0 0 15px #ef4444; /* orange-500, red-500 */
+            }
+            50% {
+                transform: scale(0.95) rotate(3deg);
+                opacity: 1;
+                text-shadow: 0 0 6px #fbbf24, 0 0 12px #f97316; /* amber-400, orange-500 */
+            }
+            75% {
+                transform: scale(1.05) rotate(-1deg);
+                opacity: 0.85;
+                text-shadow: 0 0 9px #ef4444, 0 0 18px #f59e0b; /* red-500, amber-500 */
+            }
+        }
+
+        .animate-thumb-up {
+            animation: thumb-up 1.2s ease-in-out infinite;
+        }
+
+        @keyframes thumb-up {
+            0%, 100% {
+                transform: translateY(0) rotate(0);
+                /* กำหนดเงาเริ่มต้น */
+                text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            }
+            50% {
+                /* ขยับขึ้นเล็กน้อยและเอียงนิดหน่อย */
+                transform: translateY(-4px) rotate(-10deg);
+                /* เพิ่มเงาให้ดูมีมิติมากขึ้นเมื่อยกขึ้น */
+                text-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            }
         }
     </style>
 </div>
