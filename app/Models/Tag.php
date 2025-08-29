@@ -20,24 +20,4 @@ class Tag extends Model
     {
         return $this->belongsToMany(User::class, 'user_tags');
     }
-
-    /**
-     * Create slug from name
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($tag) {
-            if (empty($tag->name)) {
-                $tag->name = Str::slug($tag->name);
-            }
-        });
-
-        static::updating(function ($tag) {
-            if ($tag->isDirty('name')) {
-                $tag->name = Str::slug($tag->name);
-            }
-        });
-    }
 }
