@@ -33,10 +33,16 @@
             </main>
         </div>
         <script>
-            function openMyModal() {
+            function openViewModal() {
                 // สร้าง event แบบกำหนดเองชื่อ 'open-the-modal'
                 const event = new Event('open-the-modal');
                 // ส่ง event นี้ออกไปในระดับ window
+                window.dispatchEvent(event);
+            }
+
+            function openDeleteModal() {
+                // สร้าง event ใหม่ชื่อ 'open-the-delete-modal'
+                const event = new Event('open-the-delete-modal');
                 window.dispatchEvent(event);
             }
         </script>
