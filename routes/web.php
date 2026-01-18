@@ -31,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/knowledge/refresh', [KnowledgeController::class, 'refreshKnowledge'])->name('knowledge.refresh');
     Route::get('/knowledge/stats', [KnowledgeController::class, 'getKnowledgeStats'])->name('knowledge.stats');
     Route::resource('knowledge', KnowledgeController::class);
+
+    Route::delete('/profile/documents/{document}', [ProfileController::class, 'destroyDocument'])->name('profile.document.destroy');
 });
 
 require __DIR__.'/auth.php';

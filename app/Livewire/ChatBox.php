@@ -6,6 +6,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Repositories\ConversationRepository;
 use App\Services\FastAPIService;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Log;
@@ -135,7 +136,7 @@ class ChatBox extends Component
                 'icon' => '❓',
                 'title' => 'อื่นๆ',
                 'prompts' => [
-                    'ฉันผ่านเงื่อนไขการจบการศึกษาหรือยัง',
+                    'ช่วยตรวจสอบสถานะการสำเร็จการศึกษาให้หน่อย',
                     'แนะนำวิชาเลือกให้หน่อย'
                 ]
             ]
@@ -200,10 +201,11 @@ class ChatBox extends Component
             $this->message = $prompt;
         }
 
-        $this->validate();
+        $this->validate(['message' => 'required|string']);
 
         $this->loading = true;
         $this->showSuggestedPrompts = false;
+        $this->isWaitingForResponse = true;
 
         try {
             $userMessage = $this->conversation->messages()->create([
@@ -225,17 +227,33 @@ class ChatBox extends Component
                 }
             }
 
+            // รวบรวมไฟล์จากโปรไฟล์ของผู้ใช้
+            $userDocumentPaths = [];
+            $user = Auth::user()->load('documents');
+            foreach ($user->documents as $doc) {
+                $userDocumentPaths[] = [
+                    'path' => $doc->stored_path,
+                    'original_name' => $doc->original_filename,
+                ];
+            }
+
+            // ตรวจสอบและรวบรวม Tags
+            $userTags = [];
+            if (str_contains($this->message, 'แนะนำวิชา')) {
+                $user->load('interestedTags');
+                $userTags = $user->interestedTags->pluck('name')->toArray();
+                Log::info('Course recommendation detected. Attaching user tags.', ['tags' => $userTags]);
+            }
+
             ProcessPromptWithFastAPI::dispatch(
                 $this->conversation->id,
                 $this->message,
-                $attachmentIds
+                $attachmentIds,
+                $userDocumentPaths,
+                $userTags
             );
 
-            $this->isWaitingForResponse = true;
-
-            $this->message = '';
-            $this->files = [];
-            $this->newFiles = [];
+            $this->reset('message', 'files', 'newFiles');
             $this->showFileUpload = false;
             $this->resetErrorBag();
 
@@ -274,10 +292,7 @@ class ChatBox extends Component
 
     public function render()
     {
-        $messages = $this->conversation->messages()->latest('id')->get();
-
-        return view('livewire.chat-box', [
-            'messages' => $messages,
-        ]);
+        $messages = $this->conversation->messages()->with('attachments')->latest()->get();
+        return view('livewire.chat-box', compact('messages'));
     }
 }

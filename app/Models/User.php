@@ -62,6 +62,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Tag::class, 'user_tags');
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(UserDocument::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'ADMIN';
@@ -70,5 +75,10 @@ class User extends Authenticatable
     public function isUser(): bool
     {
         return $this->role === 'USER';
+    }
+
+    public function getDocument(string $type)
+    {
+        return $this->documents()->where('document_type', $type)->first();
     }
 }

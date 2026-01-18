@@ -1,11 +1,11 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
+        <h2 class="text-xl font-medium text-gray-900">
+            {{ __('ข้อมูลโปรไฟล์') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information.") }}
+        <p class="mt-1 text-m text-gray-600">
+            {{ __("อัปเดตข้อมูลโปรไฟล์ของคุณ") }}
         </p>
     </header>
 
@@ -18,21 +18,21 @@
         @method('patch')
 
         <div>
-            <x-input-label for="name" :value="__('Name')" />
+            <x-input-label for="name" :value="__('ชื่อ-นามสกุล')"/>
             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" autofocus autocomplete="name" disabled/>
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
         <div>
-            <x-input-label for="email" :value="__('Email')" />
+            <x-input-label for="email" :value="__('อีเมล')" />
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" autocomplete="username" disabled/>
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
         </div>
 
         <!-- Interested Tags Section -->
         <div id="interested-tags-section">
-            <x-input-label :value="__('Interested Fields')" />
-            <p class="mt-1 text-sm text-gray-500">{{ __('Press Enter to separate each tag.') }}</p>
+            <x-input-label :value="__('หัวข้อที่สนใจ')" />
+            <p class="mt-1 text-sm text-gray-500">{{ __('กด Enter เพื่อแยกแต่ละหัวข้อ') }}</p>
 
             <!-- Tag Input Container -->
             <div class="mt-3 border rounded-lg p-3 bg-gray-50 min-h-[100px] focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500">
@@ -53,7 +53,7 @@
                 <input
                     type="text"
                     id="tag-input"
-                    placeholder="{{ __('Add Tags') }}"
+                    placeholder="{{ __('เพิ่มหัวข้อ') }}"
                     class="w-full border-0 bg-transparent focus:ring-0 focus:outline-none text-sm placeholder-gray-400"
                     autocomplete="off"
                 >
@@ -69,7 +69,7 @@
                     hover:bg-red-500 bg-red-600 text-red-100 border border-red-200"
                     style="display: {{ $user->interestedTags->count() > 0 ? 'inline' : 'none' }};"
                 >
-                    {{ __('Delete all tags') }}
+                    {{ __('ลบหัวข้อทั้งหมด') }}
                 </button>
                 <span id="tag-counter" class="pl-3 text-sm text-gray-500">
                     <span id="current-count">{{ $user->interestedTags->count() }}</span>/10
@@ -86,8 +86,49 @@
             <x-input-error class="mt-2" :messages="$errors->get('tag_names')" />
         </div>
 
+        <div class="pt-6 border-t border-gray-200">
+            <header>
+                <h2 class="text-lg font-medium text-gray-900">
+                    {{ __('เอกสารของฉัน') }}
+                </h2>
+                <p class="mt-1 text-sm text-gray-600">
+                    {{ __('อัปโหลดเอกสารของคุณ เพื่อประกอบการตรวจสอบการสำเร็จการศึกษา ระบบจะใช้เอกสารที่ถูกอัปเดตล่าสุด') }}
+
+                </p>
+            </header>
+
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {{-- Transcript Upload --}}
+                <x-file-input
+                    name="documents[transcript]"
+                    label="ใบรายงานคะแนนผลการเรียน (ฉบับล่าสุด)"
+                    accept=".pdf"
+                    :document="$user->getDocument('transcript')"
+                />
+                <x-input-error class="mt-2" :messages="$errors->get('documents.transcript')" />
+
+                {{-- Activity Certificate Upload --}}
+                <x-file-input
+                    name="documents[activity]"
+                    label="ใบรายงานการเข้าร่วมกิจกรรม (ฉบับล่าสุด)"
+                    accept=".pdf"
+                    :document="$user->getDocument('activity')"
+                />
+                <x-input-error class="mt-2" :messages="$errors->get('documents.activity')" />
+
+                {{-- Payment Receipt Upload --}}
+                <x-file-input
+                    name="documents[receipt]"
+                    label="ใบเสร็จค่าธรรมเนียมการศึกษา (ภาคการศึกษาล่าสุด)"
+                    accept=".pdf"
+                    :document="$user->getDocument('receipt')"
+                />
+                <x-input-error class="mt-2" :messages="$errors->get('documents.receipt')" />
+            </div>
+        </div>
+
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-primary-button>{{ __('บันทึก') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
                 <p
@@ -96,7 +137,7 @@
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
                     class="text-sm text-green-600"
-                >{{ __('Saved successfully!') }}</p>
+                >{{ __('บันทึกข้อมูลเรียบร้อย!') }}</p>
             @endif
         </div>
     </form>
@@ -119,10 +160,10 @@
         // Disable input if max tags reached
         if (currentCount >= MAX_TAGS) {
             tagInput.disabled = true;
-            tagInput.placeholder = 'Maximum tags reached';
+            tagInput.placeholder = 'เพิ่มได้สูงสุด 10 ห้วข้อ';
         } else {
             tagInput.disabled = false;
-            tagInput.placeholder = 'Add Tags';
+            tagInput.placeholder = 'เพิ่มหัวข้อ';
         }
     }
 
@@ -133,7 +174,7 @@
 
         // Check if we've reached the maximum
         if (selectedTagsContainer.children.length >= MAX_TAGS) {
-            alert('Maximum 10 tags allowed');
+            alert('เพิ่มได้สูงสุด 10 ห้วข้อ');
             return false;
         }
 
@@ -142,7 +183,7 @@
             .map(input => input.value.toLowerCase());
 
         if (existingTags.includes(tagName.toLowerCase())) {
-            alert('Tag already selected');
+            alert('มีหัวข้อนี้แล้ว');
             return false;
         }
 
@@ -169,7 +210,7 @@
     }
 
     function deleteAllTags() {
-        if (confirm('Are you sure you want to delete all tags?')) {
+        if (confirm('ต้องการลบหัวข้อทั้งหมดหรือไม่?')) {
             selectedTagsContainer.innerHTML = '';
             updateTagCounter();
         }
@@ -244,4 +285,43 @@
 
     // Add autocomplete functionality
     tagInput.setAttribute('list', 'existing-tags');
+
+    function handleDocumentDelete(buttonElement, url) {
+        if (!confirm('ต้องการลบไฟล์นี้หรือไม่?')) {
+            return;
+        }
+
+        buttonElement.disabled = true;
+        buttonElement.textContent = 'กำลังลบ...';
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                response.json().then(data => {
+                    alert('Deletion failed: ' + (data.message || 'Unknown error'));
+                }).catch(() => {
+                    alert('Deletion failed. Please check the console for details.');
+                });
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '<svg ...>...</svg> Delete';
+            }
+        })
+        .catch(error => {
+            console.error('Fetch Error:', error);
+            alert('A network error occurred. Please check your connection.');
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = '<svg ...>...</svg> Delete';
+        });
+    }
 </script>

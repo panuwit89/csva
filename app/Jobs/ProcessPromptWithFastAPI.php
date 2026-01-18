@@ -26,7 +26,9 @@ class ProcessPromptWithFastAPI implements ShouldQueue
     public function __construct(
         public int $conversationId,
         public string $prompt,
-        public array  $attachmentIds = []
+        public array  $attachmentIds = [],
+        public array $userDocumentPaths = [],
+        public array $userTags = []
     ) {}
 
     /**
@@ -35,21 +37,56 @@ class ProcessPromptWithFastAPI implements ShouldQueue
     public function handle(FastAPIService $fastAPIService, ConversationRepository $conversationRepository): void
     {
         try {
-            $messageContent = ''; // ประกาศตัวแปรสำหรับเก็บข้อความสุดท้าย
+            $allFilesData = [];
 
             if (!empty($this->attachmentIds)) {
-                $fileData = [];
                 $attachments = MessageAttachment::findMany($this->attachmentIds);
                 foreach ($attachments as $attachment) {
                     $fullPath = Storage::disk('public')->path($attachment->path);
                     if (file_exists($fullPath)) {
-                        $fileData[] = ['path' => $fullPath, 'original_name' => $attachment->original_name];
+                        $allFilesData[] = ['path' => $fullPath, 'original_name' => $attachment->original_name];
                     }
                 }
-                $messageContent = $fastAPIService->sendFilesAndPrompt($fileData, $this->prompt, $this->conversationId);
+            }
+
+            $graduationKeywords = ['จบการศึกษา', 'สำเร็จการศึกษา', 'เช็คจบ', 'สถานะจบการศึกษา'];
+            $isGraduationCheckIntent = false;
+            foreach ($graduationKeywords as $keyword) {
+                if (mb_stripos($this->prompt, $keyword) !== false) {
+                    $isGraduationCheckIntent = true;
+                    break;
+                }
+            }
+
+            if ($isGraduationCheckIntent && !empty($this->userDocumentPaths)) {
+                Log::info("Graduation check intent detected. Attaching user profile documents.", ['conv_id' => $this->conversationId]);
+                foreach ($this->userDocumentPaths as $docInfo) {
+                    $fullPath = Storage::disk('public')->path($docInfo['path']);
+                    if (file_exists($fullPath)) {
+                        $allFilesData[] = [
+                            'path' => $fullPath,
+                            'original_name' => $docInfo['original_name']
+                        ];
+                    } else {
+                        Log::warning("User profile document not found at path: " . $docInfo['path']);
+                    }
+                }
             } else {
+                Log::info("No graduation check intent detected or no profile docs. Skipping user profile documents.", ['conv_id' => $this->conversationId]);
+            }
+            Log::info("Total files prepared for FastAPI: " . count($allFilesData), ['conv_id' => $this->conversationId]);
+
+            $responseContent = '';
+
+            if (!empty($allFilesData)) {
+                // กรณีมีไฟล์: ส่งทั้งไฟล์และข้อความ
+                Log::info("Routing to general file processing for conv {$this->conversationId}");
+                $responseContent = $fastAPIService->sendFilesAndPrompt($allFilesData, $this->prompt, $this->conversationId, $this->userTags);
+            } else {
+                // กรณีไม่มีไฟล์: ส่งเฉพาะข้อความ
+                Log::info("Routing to text-only prompt for conv {$this->conversationId}");
                 $history = $conversationRepository->getConversationMessageWithAttachments($this->conversationId);
-                $messageContent = $fastAPIService->sendPrompt($this->prompt, $this->conversationId, $history->toArray());
+                $responseContent = $fastAPIService->sendPrompt($this->prompt, $this->conversationId, $history->toArray(), $this->userTags);
             }
 
             // ค้นหา Conversation ด้วย Eloquent โดยตรง
@@ -62,11 +99,11 @@ class ProcessPromptWithFastAPI implements ShouldQueue
             }
 
             // ตรวจสอบว่าได้ข้อความกลับมาจริงๆ (ไม่เป็นค่าว่างหรือ null)
-            if (!empty($messageContent)) {
+            if (!empty($responseContent)) {
                 // บันทึกข้อความลง DB โดยตรง
                 $newMessage = $conversation->messages()->create([
                     'role' => 'model',
-                    'content' => $messageContent,
+                    'content' => $responseContent,
                 ]);
                 Log::info("New message saved successfully with ID: " . $newMessage->id);
             } else {
