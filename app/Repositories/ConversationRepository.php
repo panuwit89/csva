@@ -42,4 +42,9 @@ class ConversationRepository
             ];
         });
     }
+
+    public function deleteAllConversationInArray(array $conversationIds)
+    {
+        return Conversation::whereIn('id', $conversationIds)->delete();
+    }
 }

@@ -98,4 +98,16 @@ class ConversationController extends Controller
 
         return redirect()->route('conversation.index');
     }
+
+    public function multipleDelete(Request $request)
+    {
+        $conversationIds = $request->input('conversations_to_delete');
+
+        if (is_array($conversationIds) && !empty($conversationIds)) {
+            $this->conversationRepository->deleteAllConversationInArray($conversationIds);
+            return redirect()->route('conversation.index')->with('status', 'Conversations deleted successfully!');
+        }
+
+        return redirect()->route('conversation.index')->with('status', 'No conversations were selected.');
+    }
 }
