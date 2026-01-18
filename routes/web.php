@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::delete('conversation/multipleDelete', [ConversationController::class, 'multipleDelete'])->name('conversation.multipleDelete');
     Route::resource('conversation', ConversationController::class);
 
     Route::get('/knowledge/{knowledge}/download', [KnowledgeController::class, 'download'])->name('knowledge.download');
