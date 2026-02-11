@@ -39,16 +39,17 @@
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
+            <x-primary-button id="system_login_btn" class="ms-3">
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
 
+        <!-- Google Auth -->
         <div class="flex items-center justify-center mt-4">
-            <a href="{{ route('auth.google.redirect') }}"
-               class="btn bg-blue-100 p-3 shadow-sm border rounded-md text-blue-900 hover:bg-blue-200 transition-colors flex items-center gap-2">
+            <a id="google_login_btn"
+               href="{{ route('auth.google.redirect') }}"
+               class="btn bg-blue-100 p-3 shadow-sm border rounded-md text-blue-900 hover:bg-blue-200 transition-colors flex items-center gap-2 cursor-pointer">
                 <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <!-- Google icon SVG -->
                     <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                     <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -57,5 +58,63 @@
                 Continue with Google
             </a>
         </div>
+
+        <!-- Privacy Policy -->
+        <div class="block mt-4">
+            <label for="privacy_policy" class="inline-flex items-center">
+                <input id="privacy_policy" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="policy">
+                <span class="ms-2 text-sm text-gray-600">{{ __('I have read and accept the') }}
+                    <div class="relative inline-block group">
+                        <span class="underline text-indigo-600 cursor-help">
+                            Privacy Policy
+                        </span>
+                        <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-white text-gray-700 text-xs rounded-lg shadow-xl border border-gray-200 hidden group-hover:block z-50">
+                            We value your privacy. By signing up, you consent to the collection of your email, profile details, and uploaded documents in accordance with our Privacy Policy.
+                            <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-white"></div>
+                        </div>
+                    </div>
+                </span>
+            </label>
+            <p id="policy_error" class="text-red-500 text-sm mt-1 ml-6 hidden">
+                * Please accept the Privacy Policy to continue.
+            </p>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const googleBtn = document.getElementById('google_login_btn');
+                const systemBtn = document.getElementById('system_login_btn')
+                const checkbox = document.getElementById('privacy_policy');
+                const errorMsg = document.getElementById('policy_error');
+
+                googleBtn.addEventListener('click', function (e) {
+                    if (!checkbox.checked) {
+
+                        e.preventDefault();
+
+                        checkbox.focus();
+
+                        errorMsg.classList.remove('hidden');
+                    }
+                });
+
+                systemBtn.addEventListener('click', function (e) {
+                    if (!checkbox.checked) {
+
+                        e.preventDefault();
+
+                        checkbox.focus();
+
+                        errorMsg.classList.remove('hidden');
+                    }
+                });
+
+                checkbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        errorMsg.classList.add('hidden');
+                    }
+                });
+            });
+        </script>
     </form>
 </x-guest-layout>
