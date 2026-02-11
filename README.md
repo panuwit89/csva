@@ -38,6 +38,10 @@ sail artisan key:generate
 ```bash
 sail artisan migrate
 ```
+### Connect to Storage
+```bash
+sail artisan storage:link
+```
 ### Install NPM
 ```bash
 npm install
@@ -46,7 +50,7 @@ npm install
 npm run dev
 ```
 ### Run Queue
-```
+```bash
 sail artisan queue:work
 ```
 ### Compose Down Project
