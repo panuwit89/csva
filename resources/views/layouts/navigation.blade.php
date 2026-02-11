@@ -34,9 +34,11 @@
                     <x-nav-link :href="route('conversation.index')" :active="request()->routeIs('conversation.index')">
                         {{ __('การสนทนา') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('knowledge.index')" :active="request()->routeIs('knowledge.index')">
-                        {{ __('เอกสารอ้างอิง') }}
-                    </x-nav-link>
+                    @can('viewAny', \App\Models\Knowledge::class)
+                        <x-nav-link :href="route('knowledge.index')" :active="request()->routeIs('knowledge.index')">
+                            {{ __('เอกสารอ้างอิง') }}
+                        </x-nav-link>
+                    @endcan
                 </div>
             </div>
 
