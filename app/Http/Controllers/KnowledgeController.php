@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\File;
+use Illuminate\Support\Facades\Gate;
 
 class KnowledgeController extends Controller
 {
@@ -26,6 +27,7 @@ class KnowledgeController extends Controller
      */
     public function index()
     {
+        Gate::authorize('viewAny', Knowledge::class);
         $knowledges = $this->knowledgeRepository->getAllKnowledgeDesc();
 
         return view('knowledge.index', compact('knowledges'));
@@ -36,6 +38,7 @@ class KnowledgeController extends Controller
      */
     public function create()
     {
+        Gate::authorize('create', Knowledge::class);
         return view('knowledge.create');
     }
 
@@ -44,6 +47,7 @@ class KnowledgeController extends Controller
      */
     public function store(Request $request)
     {
+        Gate::authorize('create', Knowledge::class);
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -89,6 +93,7 @@ class KnowledgeController extends Controller
      */
     public function show(Knowledge $knowledge)
     {
+        Gate::authorize('view', Knowledge::class);
         $content = null;
         if (in_array($knowledge->mime_type, ['application/json', 'text/plain'])) {
             if (Storage::disk('public')->exists($knowledge->file_path)) {
@@ -104,6 +109,7 @@ class KnowledgeController extends Controller
      */
     public function edit(Knowledge $knowledge)
     {
+        Gate::authorize('update', Knowledge::class);
         return view('knowledge.edit', compact('knowledge'));
     }
 
@@ -112,6 +118,7 @@ class KnowledgeController extends Controller
      */
     public function update(Request $request, Knowledge $knowledge)
     {
+        Gate::authorize('update', Knowledge::class);
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -168,6 +175,7 @@ class KnowledgeController extends Controller
      */
     public function destroy(Knowledge $knowledge)
     {
+        Gate::authorize('destroy', Knowledge::class);
         try {
             // Delete file from storage
             if (Storage::disk('public')->exists($knowledge->file_path)) {
@@ -187,6 +195,7 @@ class KnowledgeController extends Controller
 
     public function download(Knowledge $knowledge)
     {
+        Gate::authorize('manage', Knowledge::class);
         if (!Storage::disk('public')->exists($knowledge->file_path)) {
             abort(404, 'File not found');
         }
@@ -199,6 +208,7 @@ class KnowledgeController extends Controller
 
     public function toggle(Knowledge $knowledge)
     {
+        Gate::authorize('manage', Knowledge::class);
         $knowledge->update(['is_active' => !$knowledge->is_active]);
 
         $status = $knowledge->is_active ? 'activated' : 'deactivated';
@@ -208,6 +218,7 @@ class KnowledgeController extends Controller
 
     public function refreshKnowledge()
     {
+        Gate::authorize('manage', Knowledge::class);
         try {
             $result = $this->fastAPIService->refreshKnowledge();
 
