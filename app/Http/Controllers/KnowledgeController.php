@@ -79,12 +79,12 @@ class KnowledgeController extends Controller
             ]);
 
             return redirect()->route('knowledge.index')
-                ->with('success', 'Knowledge document uploaded successfully!');
+                ->with('success', 'เอกสารอ้างอิงถูกอัปโหลดเรียบร้อยแล้ว');
 
         } catch (\Exception $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Failed to upload document: ' . $e->getMessage());
+                ->with('error', 'อัปโหลดเอกสารอ้างอิงล้มเหลว: ' . $e->getMessage());
         }
     }
 
@@ -93,7 +93,7 @@ class KnowledgeController extends Controller
      */
     public function show(Knowledge $knowledge)
     {
-        Gate::authorize('view', Knowledge::class);
+        Gate::authorize('view', $knowledge);
         $content = null;
         if (in_array($knowledge->mime_type, ['application/json', 'text/plain'])) {
             if (Storage::disk('public')->exists($knowledge->file_path)) {
@@ -109,7 +109,7 @@ class KnowledgeController extends Controller
      */
     public function edit(Knowledge $knowledge)
     {
-        Gate::authorize('update', Knowledge::class);
+        Gate::authorize('update', $knowledge);
         return view('knowledge.edit', compact('knowledge'));
     }
 
@@ -118,7 +118,7 @@ class KnowledgeController extends Controller
      */
     public function update(Request $request, Knowledge $knowledge)
     {
-        Gate::authorize('update', Knowledge::class);
+        Gate::authorize('update', $knowledge);
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -161,12 +161,12 @@ class KnowledgeController extends Controller
             $this->knowledgeRepository->update($data, $knowledge->id);
 
             return redirect()->route('knowledge.index')
-                ->with('success', 'Knowledge document updated successfully!');
+                ->with('success', 'อัปเดตเอกสารอ้างอิงเรียบร้อยแล้ว');
 
         } catch (\Exception $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Failed to update document: ' . $e->getMessage());
+                ->with('error', 'อัปเดตเอกสารอ้างอิงล้มเหลว: ' . $e->getMessage());
         }
     }
 
@@ -175,7 +175,7 @@ class KnowledgeController extends Controller
      */
     public function destroy(Knowledge $knowledge)
     {
-        Gate::authorize('destroy', Knowledge::class);
+        Gate::authorize('delete', $knowledge);
         try {
             // Delete file from storage
             if (Storage::disk('public')->exists($knowledge->file_path)) {
@@ -185,17 +185,17 @@ class KnowledgeController extends Controller
             $knowledge->delete();
 
             return redirect()->route('knowledge.index')
-                ->with('success', 'Knowledge document deleted successfully!');
+                ->with('success', 'ลบเอกสารอ้างอิงเรียบร้อยแล้ว');
 
         } catch (\Exception $e) {
             return back()
-                ->with('error', 'Failed to delete document: ' . $e->getMessage());
+                ->with('error', 'ลบเอกสารอ้างอิงล้มเหลว: ' . $e->getMessage());
         }
     }
 
     public function download(Knowledge $knowledge)
     {
-        Gate::authorize('manage', Knowledge::class);
+        Gate::authorize('manage', $knowledge);
         if (!Storage::disk('public')->exists($knowledge->file_path)) {
             abort(404, 'File not found');
         }
@@ -208,17 +208,17 @@ class KnowledgeController extends Controller
 
     public function toggle(Knowledge $knowledge)
     {
-        Gate::authorize('manage', Knowledge::class);
+        Gate::authorize('manage', $knowledge);
         $knowledge->update(['is_active' => !$knowledge->is_active]);
 
-        $status = $knowledge->is_active ? 'activated' : 'deactivated';
+        $status = $knowledge->is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
 
-        return back()->with('success', "Knowledge document {$status} successfully!");
+        return back()->with('success', "เอกสารอ้างอิงเปลี่ยนเป็นสถานะเป็น {$status} เรียบร้อยแล้ว");
     }
 
     public function refreshKnowledge()
     {
-        Gate::authorize('manage', Knowledge::class);
+        Gate::authorize('refresh', Knowledge::class);
         try {
             $result = $this->fastAPIService->refreshKnowledge();
 
@@ -229,7 +229,7 @@ class KnowledgeController extends Controller
             }
 
         } catch (\Exception $e) {
-            return back()->with('error', 'Failed to refresh AI knowledge base: ' . $e->getMessage());
+            return back()->with('error', 'อัปเดตฐานข้อมูลอ้างอิงล้มเหลว: ' . $e->getMessage());
         }
     }
 
@@ -241,7 +241,7 @@ class KnowledgeController extends Controller
             return response()->json($knowledges);
 
         } catch (\Exception $e) {
-            Log::error('Error fetching active knowledge files: ' . $e->getMessage());
+            Log::error('เรียกไฟล์ที่เปิดใช้งานล้มเหลว: ' . $e->getMessage());
 
             return response()->json([
                 'error' => 'Failed to fetch knowledge files',

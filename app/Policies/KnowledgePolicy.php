@@ -65,9 +65,17 @@ class KnowledgePolicy
     }
 
     /**
-     * Determine whether the user can download, toggle or refresh the model.
+     * Determine whether the user can download or toggle the model.
      */
     public function manage(User $user, Knowledge $knowledge): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can refresh the model.
+     */
+    public function refresh(User $user): bool
     {
         return $user->isAdmin();
     }

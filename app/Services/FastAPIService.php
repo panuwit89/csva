@@ -271,7 +271,7 @@ class FastAPIService
                 Log::info('AI knowledge base refreshed successfully', ['data' => $data]);
 
                 $filesProcessed = $data['files_processed'] ?? 0;
-                $message = "AI knowledge base refreshed successfully!";
+                $message = "อัปเดตฐานข้อมูลอ้างอิงเรียบร้อยแล้ว";
 
                 return [
                     'success' => true,
@@ -279,7 +279,7 @@ class FastAPIService
                     'data' => $data
                 ];
             } else {
-                $errorMessage = 'Failed to refresh AI knowledge base. Status: ' . $response->status();
+                $errorMessage = 'อัปเดตฐานข้อมูลล้มเหลว. Status: ' . $response->status();
                 Log::error($errorMessage . ' - Response: ' . $response->body());
 
                 return [
