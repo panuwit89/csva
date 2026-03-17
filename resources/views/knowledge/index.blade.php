@@ -5,7 +5,7 @@
                 {{ __('รายการเอกสารอ้างอิง') }}
             </h2>
             <div class="flex justify-content-end space-x-4">
-                <form action="{{ route('knowledge.refresh') }}" method="POST"  onsubmit="return confirm('Are you sure you want to refresh the knowledge? This action takes some time.')">
+                <form action="{{ route('knowledge.refresh') }}" method="POST"  onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการอัปเดตฐานข้อมูลอ้างอิง? การดำเนินการนี้ไม่สามารถย้อนกลับได้')">
                     @csrf
 {{--                    @method('POST')--}}
                     <x-button type="submit" color="green">
@@ -129,7 +129,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $knowledge->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                    {{ $knowledge->is_active ? 'Active' : 'Inactive' }}
+                                                    {{ $knowledge->is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
                                                 </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -153,7 +153,7 @@
                                                 <form action="{{ route('knowledge.toggle', $knowledge) }}" method="POST" class="inline">
                                                     @csrf
                                                     @method('PATCH')
-                                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900" title="{{ $knowledge->is_active ? 'Deactivate' : 'Activate' }}">
+                                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900" title="{{ $knowledge->is_active ? 'ปิดใช้งาน' : 'เปิดใช้งาน' }}">
                                                         @if($knowledge->is_active)
                                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
@@ -165,7 +165,7 @@
                                                         @endif
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('knowledge.destroy', $knowledge) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this document?')">
+                                                <form action="{{ route('knowledge.destroy', $knowledge) }}" method="POST" class="inline" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบเอกสารนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="text-red-600 hover:text-red-900" title="Delete">

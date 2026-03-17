@@ -67,7 +67,7 @@
                                         <dt class="text-sm font-medium text-gray-500">สถานะ</dt>
                                         <dd class="mt-1">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $knowledge->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $knowledge->is_active ? 'Active' : 'Inactive' }}
+                                                {{ $knowledge->is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน' }}
                                             </span>
                                         </dd>
                                     </div>
@@ -85,7 +85,7 @@
                                     <form action="{{ route('knowledge.toggle', $knowledge) }}" method="POST" class="w-full">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white {{ $knowledge->is_active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700' }} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        <button type="submit" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white {{ $knowledge->is_active ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700' }} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                             @if($knowledge->is_active)
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
@@ -100,7 +100,7 @@
                                         </button>
                                     </form>
 
-                                    <form action="{{ route('knowledge.destroy', $knowledge) }}" method="POST" class="w-full" onsubmit="return confirm('Are you sure you want to delete this document? This action cannot be undone.')">
+                                    <form action="{{ route('knowledge.destroy', $knowledge) }}" method="POST" class="w-full" onsubmit="return confirm('คุณแน่ใจหรือไม่ว่าต้องการลบเอกสารนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="w-full flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
