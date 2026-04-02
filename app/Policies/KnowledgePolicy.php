@@ -13,7 +13,7 @@ class KnowledgePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     /**
@@ -21,7 +21,7 @@ class KnowledgePolicy
      */
     public function view(User $user, Knowledge $knowledge): bool
     {
-        return $user->isAdmin();
+        return true;
     }
 
     /**
@@ -65,11 +65,19 @@ class KnowledgePolicy
     }
 
     /**
-     * Determine whether the user can download or toggle the model.
+     * Determine whether the user can toggle usage the model.
      */
-    public function manage(User $user, Knowledge $knowledge): bool
+    public function toggle(User $user, Knowledge $knowledge): bool
     {
         return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can download the model.
+     */
+    public function download(User $user, Knowledge $knowledge): bool
+    {
+        return true;
     }
 
     /**

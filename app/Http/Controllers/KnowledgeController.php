@@ -195,7 +195,7 @@ class KnowledgeController extends Controller
 
     public function download(Knowledge $knowledge)
     {
-        Gate::authorize('manage', $knowledge);
+        Gate::authorize('download', $knowledge);
         if (!Storage::disk('public')->exists($knowledge->file_path)) {
             abort(404, 'File not found');
         }
@@ -208,7 +208,7 @@ class KnowledgeController extends Controller
 
     public function toggle(Knowledge $knowledge)
     {
-        Gate::authorize('manage', $knowledge);
+        Gate::authorize('toggle', $knowledge);
         $knowledge->update(['is_active' => !$knowledge->is_active]);
 
         $status = $knowledge->is_active ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
