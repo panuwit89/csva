@@ -249,21 +249,4 @@ class KnowledgeController extends Controller
             ], 500);
         }
     }
-
-    public function getKnowledgeStats(): JsonResponse
-    {
-        try {
-            $stats = $this->knowledgeRepository->getStats();
-
-            return response()->json($stats);
-
-        } catch (\Exception $e) {
-            Log::error('Error fetching knowledge statistics: ' . $e->getMessage());
-
-            return response()->json([
-                'error' => 'Failed to fetch statistics',
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
 }

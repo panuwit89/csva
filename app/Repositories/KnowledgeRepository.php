@@ -36,17 +36,4 @@ class KnowledgeRepository
             ->orderBy('created_at', 'desc')
             ->get();
     }
-
-    public function getStats()
-    {
-        $stats = [
-            'total_files' => Knowledge::count(),
-            'active_files' => Knowledge::where('is_active', true)->count(),
-            'inactive_files' => Knowledge::where('is_active', false)->count(),
-            'total_size' => Knowledge::where('is_active', true)->sum('file_size'),
-            'last_updated' => Knowledge::latest('updated_at')->first()?->updated_at
-        ];
-
-        return $stats;
-    }
 }

@@ -7,7 +7,7 @@ use App\Http\Controllers\GoogleAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('auth.login');
+    return redirect('/conversation');
 });
 
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->name('auth.google.redirect');
@@ -29,7 +29,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/knowledge/{knowledge}/download', [KnowledgeController::class, 'download'])->name('knowledge.download');
     Route::patch('/knowledge/{knowledge}/toggle', [KnowledgeController::class, 'toggle'])->name('knowledge.toggle');
     Route::post('/knowledge/refresh', [KnowledgeController::class, 'refreshKnowledge'])->name('knowledge.refresh');
-    Route::get('/knowledge/stats', [KnowledgeController::class, 'getKnowledgeStats'])->name('knowledge.stats');
     Route::resource('knowledge', KnowledgeController::class);
 
     Route::delete('/profile/documents/{document}', [ProfileController::class, 'destroyDocument'])->name('profile.document.destroy');
