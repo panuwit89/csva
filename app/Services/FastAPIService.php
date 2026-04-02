@@ -81,7 +81,7 @@ class FastAPIService
                 return 'No files were provided.';
             }
 
-            $http = Http::timeout(120)->asMultipart();
+            $http = Http::timeout(300)->asMultipart();
             $http->attach('custom_prompt', $prompt);
             $http->attach('conv_id', (string)$conv_id); // 👈 ควรแปลงเป็น string เพื่อความแน่นอน
             $http->attach('tags', json_encode($tags));
