@@ -1,4 +1,4 @@
-# Computer Science Visual Assistant (CSVA)
+# Personalized AI Academic Agent for Kasetsart University Computer Science Students (PER.AI)
 
 ## Clone Project
 ```bash
@@ -52,6 +52,10 @@ npm run dev
 ### Run Queue
 ```bash
 sail artisan queue:work
+```
+### Clear Queue
+```bash
+sail artisan queue:clear
 ```
 ### Compose Down Project
 ```bash
